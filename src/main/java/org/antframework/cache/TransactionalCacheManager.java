@@ -47,8 +47,23 @@ public interface TransactionalCacheManager extends CacheManager {
      */
     interface TransactionStatus {
         /**
+         * 是否是新事务
+         */
+        boolean isNewTransaction();
+
+        /**
          * 设置为只能回滚
          */
         void setRollbackOnly();
+
+        /**
+         * 是否设置为只能回滚
+         */
+        boolean isRollbackOnly();
+
+        /**
+         * 是否已完成
+         */
+        boolean isCompleted();
     }
 }
