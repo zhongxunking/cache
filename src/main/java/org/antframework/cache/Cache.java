@@ -15,9 +15,9 @@ import java.util.concurrent.Callable;
  */
 public interface Cache {
     /**
-     * 获取缓存名称
+     * 获取名称
      *
-     * @return 缓存名称
+     * @return 名称
      */
     String getName();
 

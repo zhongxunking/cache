@@ -15,6 +15,13 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public interface Locker {
     /**
+     * 获取名称
+     *
+     * @return 名称
+     */
+    String getName();
+
+    /**
      * 获取读写锁
      *
      * @param key 锁标识

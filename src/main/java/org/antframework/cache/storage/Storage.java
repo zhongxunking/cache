@@ -13,9 +13,9 @@ package org.antframework.cache.storage;
  */
 public interface Storage {
     /**
-     * 获取仓库名称
+     * 获取名称
      *
-     * @return 仓库名称
+     * @return 名称
      */
     String getName();
 

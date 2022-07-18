@@ -13,6 +13,13 @@ package org.antframework.cache.serialize;
  */
 public interface Serializer {
     /**
+     * 获取名称
+     *
+     * @return 名称
+     */
+    String getName();
+
+    /**
      * 序列化
      *
      * @param obj 需被序列化的对象

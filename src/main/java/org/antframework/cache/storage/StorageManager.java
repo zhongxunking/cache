@@ -8,24 +8,10 @@
  */
 package org.antframework.cache.storage;
 
-import java.util.Set;
+import org.antframework.cache.common.manager.Manager;
 
 /**
  * 仓库管理器
  */
-public interface StorageManager {
-    /**
-     * 获取仓库
-     *
-     * @param storageName 仓库名称
-     * @return 仓库
-     */
-    Storage getStorage(String storageName);
-
-    /**
-     * 获取已知的所有仓库名称
-     *
-     * @return 已知的所有仓库名称
-     */
-    Set<String> getStorageNames();
+public interface StorageManager extends Manager<Storage> {
 }

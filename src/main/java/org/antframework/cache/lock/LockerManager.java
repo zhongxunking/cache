@@ -8,24 +8,10 @@
  */
 package org.antframework.cache.lock;
 
-import java.util.Set;
+import org.antframework.cache.common.manager.Manager;
 
 /**
  * 加锁器管理器
  */
-public interface LockerManager {
-    /**
-     * 获取加锁器
-     *
-     * @param lockerName 加锁器名称
-     * @return 加锁器
-     */
-    Locker getLocker(String lockerName);
-
-    /**
-     * 获取已知的所有加锁器名称
-     *
-     * @return 已知的所有加锁器名称
-     */
-    Set<String> getLockerNames();
+public interface LockerManager extends Manager<Locker> {
 }
