@@ -6,7 +6,9 @@
  * 修订记录:
  * @author 钟勋 2022-07-14 14:20 创建
  */
-package org.antframework.cache;
+package org.antframework.cache.core;
+
+import org.antframework.cache.CacheManager;
 
 /**
  * 具备事务管理能力的缓存管理器
