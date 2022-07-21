@@ -1,0 +1,134 @@
+/*
+ * 作者：钟勋 (email:zhongxunking@163.com)
+ */
+
+/*
+ * 修订记录:
+ * @author 钟勋 2022-07-20 17:55 创建
+ */
+package org.antframework.cache.core;
+
+import lombok.AllArgsConstructor;
+import org.antframework.cache.Cache;
+import org.antframework.cache.common.CachedNull;
+import org.antframework.cache.common.DefaultCachedValue;
+import org.antframework.cache.common.Null;
+import org.antframework.cache.serialize.Serializer;
+
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * 抽象缓存
+ */
+@AllArgsConstructor
+public abstract class AbstractCache implements Cache {
+    // 名称
+    private final String name;
+    // 键和值是否允许为null
+    private final boolean allowNull;
+    // 键转换器
+    private final Function<Object, String> keyConverter;
+    // 序列化器
+    private final Serializer serializer;
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public CachedValue get(Object key) {
+        byte[] storedValue = doGet(convertKey(key));
+        if (storedValue == null) {
+            return null;
+        }
+        if (Null.is(storedValue)) {
+            return CachedNull.INSTANCE;
+        }
+        return new DefaultCachedValue(storedValue, serializer);
+    }
+
+    /**
+     * 获取缓存的值
+     *
+     * @param key 键
+     * @return 获取缓存的值
+     */
+    protected abstract byte[] doGet(String key);
+
+    @Override
+    public <T> T get(Object key, Class<T> type) {
+        CachedValue cachedValue = get(key);
+        return cachedValue == null ? null : cachedValue.get(type);
+    }
+
+    @Override
+    public <T> T get(Object key, Class<T> type, Callable<T> valueLoader) {
+        CachedValue cachedValue = get(key);
+        if (cachedValue != null) {
+            return cachedValue.get(type);
+        }
+        return doLoad(valueLoader, value -> {
+            if (value != null || allowNull) {
+                put(key, value);
+            }
+        });
+    }
+
+    /**
+     * 加载值
+     *
+     * @param valueLoader 值加载器
+     * @param putCallback 设置缓存键值对的回调
+     * @param <T>         值类型
+     * @return 值
+     */
+    protected abstract <T> T doLoad(Callable<T> valueLoader, Consumer<T> putCallback);
+
+    @Override
+    public void put(Object key, Object value) {
+        byte[] storingValue;
+        if (value == null) {
+            if (!allowNull) {
+                throw new IllegalArgumentException("value不能为null");
+            }
+            storingValue = Null.getBytes();
+        } else {
+            storingValue = serializer.serialize(value);
+        }
+        doPut(convertKey(key), storingValue);
+    }
+
+    /**
+     * 设置缓存键值对
+     *
+     * @param key   缓存键
+     * @param value 缓存值
+     */
+    protected abstract void doPut(String key, byte[] value);
+
+    @Override
+    public void remove(Object key) {
+        doRemove(convertKey(key));
+    }
+
+    /**
+     * 删除缓存键值对
+     *
+     * @param key 缓存键
+     */
+    protected abstract void doRemove(String key);
+
+    // 转换缓存键
+    private String convertKey(Object key) {
+        if (key == null) {
+            if (!allowNull) {
+                throw new IllegalArgumentException("key不能为null");
+            }
+            return Null.getString();
+        }
+        return keyConverter.apply(key);
+    }
+}

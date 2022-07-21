@@ -31,10 +31,10 @@ public interface Storage {
      * 设置键值对
      *
      * @param key      键
-     * @param bytes    值
+     * @param value    值
      * @param liveTime 存活时长（单位：毫秒，负数表示不过期）
      */
-    void put(String key, byte[] bytes, long liveTime);
+    void put(String key, byte[] value, long liveTime);
 
     /**
      * 删除键值对
