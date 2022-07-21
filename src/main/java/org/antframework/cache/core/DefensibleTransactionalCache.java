@@ -14,6 +14,7 @@ import org.antframework.cache.serialize.Serializer;
 import org.antframework.cache.storage.Storage;
 
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 /**
@@ -32,7 +33,17 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     // 存活时长的浮动率（负数表示向下浮动，正数表示向上浮动）
     private final double liveTimeFloatRate;
 
-    public DefensibleTransactionalCache(String name, boolean allowNull, Function<Object, String> keyConverter, Serializer serializer, TransactionAware transactionAware, Locker locker, long maxWaitTime, Storage storage, Long liveTime, long nullValueLiveTime, double liveTimeFloatRate) {
+    public DefensibleTransactionalCache(String name,
+                                        boolean allowNull,
+                                        Function<Object, String> keyConverter,
+                                        Serializer serializer,
+                                        TransactionAware transactionAware,
+                                        Locker locker,
+                                        long maxWaitTime,
+                                        Storage storage,
+                                        Long liveTime,
+                                        long nullValueLiveTime,
+                                        double liveTimeFloatRate) {
         super(name, allowNull, keyConverter, serializer, transactionAware, locker, maxWaitTime);
         this.storage = storage;
         this.liveTime = liveTime;
@@ -43,6 +54,11 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     @Override
     protected byte[] getInStorage(String key) {
         return storage.get(key);
+    }
+
+    @Override
+    protected <T> T doLoad(String key, Callable<T> valueLoader) {
+        return super.doLoad(key, valueLoader);
     }
 
     @Override

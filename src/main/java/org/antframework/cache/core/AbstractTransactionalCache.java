@@ -64,20 +64,36 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
         if (isTransactionalRemoved(key)) {
             value = valueLoader.call();
         } else {
-            Lock readLock = locker.getRWLock(key).readLock();
-            if (readLock.tryLock()) {
-                try {
-                    value = valueLoader.call();
-                    putCallback.accept(value);
-                } finally {
-                    readLock.unlock();
+            value = doLoad(key, () -> {
+                T loadedValue;
+                Lock readLock = locker.getRWLock(key).readLock();
+                if (readLock.tryLock()) {
+                    try {
+                        loadedValue = valueLoader.call();
+                        putCallback.accept(loadedValue);
+                    } finally {
+                        readLock.unlock();
+                    }
+                } else {
+                    loadedValue = valueLoader.call();
                 }
-            } else {
-                value = valueLoader.call();
-            }
+                return loadedValue;
+            });
         }
 
         return value;
+    }
+
+    /**
+     * 执行加载值
+     *
+     * @param key         缓存键
+     * @param valueLoader 值加载器
+     * @param <T>         值类型
+     * @return 值
+     */
+    protected <T> T doLoad(String key, Callable<T> valueLoader) {
+        return valueLoader.call();
     }
 
     @Override
