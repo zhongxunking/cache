@@ -47,7 +47,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
         if (isTransactionalRemoved(key)) {
             return null;
         }
-        return getInStorage(key);
+        return getFromStorage(key);
     }
 
     /**
@@ -56,7 +56,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
      * @param key 键
      * @return 值（null表示无该键值对）
      */
-    protected abstract byte[] getInStorage(String key);
+    protected abstract byte[] getFromStorage(String key);
 
     @Override
     protected <T> T load(String key, Callable<T> valueLoader, Consumer<T> putCallback) {
@@ -64,7 +64,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
         if (isTransactionalRemoved(key)) {
             value = valueLoader.call();
         } else {
-            value = doLoad(key, () -> {
+            value = loadInSafe(key, () -> {
                 T loadedValue;
                 Lock readLock = locker.getRWLock(key).readLock();
                 if (readLock.tryLock()) {
@@ -85,14 +85,14 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     }
 
     /**
-     * 执行加载值
+     * 加载值（已在安全区域内）
      *
      * @param key         缓存键
      * @param valueLoader 值加载器
      * @param <T>         值类型
      * @return 值
      */
-    protected <T> T doLoad(String key, Callable<T> valueLoader) {
+    protected <T> T loadInSafe(String key, Callable<T> valueLoader) {
         return valueLoader.call();
     }
 

@@ -52,13 +52,13 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     }
 
     @Override
-    protected byte[] getInStorage(String key) {
+    protected byte[] getFromStorage(String key) {
         return storage.get(key);
     }
 
     @Override
-    protected <T> T doLoad(String key, Callable<T> valueLoader) {
-        return super.doLoad(key, valueLoader);
+    protected <T> T loadInSafe(String key, Callable<T> valueLoader) {
+        return super.loadInSafe(key, valueLoader);
     }
 
     @Override
