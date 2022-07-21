@@ -40,7 +40,7 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public CachedValue get(Object key) {
-        byte[] storedValue = doGet(convertKey(key));
+        byte[] storedValue = get(convertKey(key));
         if (storedValue == null) {
             return null;
         }
@@ -51,12 +51,12 @@ public abstract class AbstractCache implements Cache {
     }
 
     /**
-     * 获取缓存的值
+     * 获取缓存值
      *
      * @param key 键
      * @return 获取缓存的值
      */
-    protected abstract byte[] doGet(String key);
+    protected abstract byte[] get(String key);
 
     @Override
     public <T> T get(Object key, Class<T> type) {
@@ -70,7 +70,7 @@ public abstract class AbstractCache implements Cache {
         if (cachedValue != null) {
             return cachedValue.get(type);
         }
-        return doLoad(valueLoader, value -> {
+        return load(convertKey(key), valueLoader, value -> {
             if (value != null || allowNull) {
                 put(key, value);
             }
@@ -80,12 +80,13 @@ public abstract class AbstractCache implements Cache {
     /**
      * 加载值
      *
+     * @param key         缓存键
      * @param valueLoader 值加载器
      * @param putCallback 设置缓存键值对的回调
      * @param <T>         值类型
      * @return 值
      */
-    protected abstract <T> T doLoad(Callable<T> valueLoader, Consumer<T> putCallback);
+    protected abstract <T> T load(String key, Callable<T> valueLoader, Consumer<T> putCallback);
 
     @Override
     public void put(Object key, Object value) {
@@ -98,7 +99,7 @@ public abstract class AbstractCache implements Cache {
         } else {
             storingValue = serializer.serialize(value);
         }
-        doPut(convertKey(key), storingValue);
+        put(convertKey(key), storingValue);
     }
 
     /**
@@ -107,11 +108,11 @@ public abstract class AbstractCache implements Cache {
      * @param key   缓存键
      * @param value 缓存值
      */
-    protected abstract void doPut(String key, byte[] value);
+    protected abstract void put(String key, byte[] value);
 
     @Override
     public void remove(Object key) {
-        doRemove(convertKey(key));
+        remove(convertKey(key));
     }
 
     /**
@@ -119,7 +120,7 @@ public abstract class AbstractCache implements Cache {
      *
      * @param key 缓存键
      */
-    protected abstract void doRemove(String key);
+    protected abstract void remove(String key);
 
     // 转换缓存键
     private String convertKey(Object key) {
