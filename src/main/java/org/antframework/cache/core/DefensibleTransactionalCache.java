@@ -8,6 +8,7 @@
  */
 package org.antframework.cache.core;
 
+import org.antframework.cache.common.Idler;
 import org.antframework.cache.common.Null;
 import org.antframework.cache.lock.Locker;
 import org.antframework.cache.serialize.Serializer;
@@ -18,12 +19,18 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 /**
- * 具备防御能力和支持事务能力的缓存
+ * 具备防御能力（防击穿、防雪崩、防穿透）和支持事务能力的缓存
  */
 public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     // 随机数
     private static final Random RANDOM = new Random();
 
+    // 仓库懒汉
+    private final Idler storageIdler = new Idler();
+    // 加载值懒汉
+    private final Idler loadingValueIdler = new Idler();
+    // 序列化器
+    private final Serializer serializer;
     // 仓库
     private final Storage storage;
     // 键值对存活时长（单位：毫秒，null表示不过期）
@@ -45,6 +52,7 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
                                         long nullValueLiveTime,
                                         double liveTimeFloatRate) {
         super(name, allowNull, keyConverter, serializer, transactionAware, locker, maxWaitTime);
+        this.serializer = serializer;
         this.storage = storage;
         this.liveTime = liveTime;
         this.nullValueLiveTime = nullValueLiveTime;
@@ -53,12 +61,18 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
 
     @Override
     protected byte[] getFromStorage(String key) {
-        return storage.get(key);
+        return storageIdler.acquire(key, () -> storage.get(key), Function.identity());
     }
 
     @Override
     protected <T> T loadInSafe(String key, Callable<T> valueLoader) {
-        return super.loadInSafe(key, valueLoader);
+        return loadingValueIdler.acquire(key, () -> super.loadInSafe(key, valueLoader), value -> {
+            if (value == null) {
+                return null;
+            }
+            byte[] bytes = serializer.serialize(value);
+            return serializer.deserialize(bytes, (Class<T>) value.getClass());
+        });
     }
 
     @Override
