@@ -24,11 +24,11 @@ public class Idler {
     private final Map<Object, WaitPoint> idWaitPoints = new ConcurrentHashMap<>();
 
     /**
-     * 获取目标
+     * 获取目标（当多个线程同时获取同一个目标时，只会允许第一个线程去加载目标，其他线程等待加载结果并直接获取）
      *
      * @param id            目标标识
      * @param targetLoader  需获取的目标的加载器
-     * @param idleConverter 为懒汉准备的目标转换器
+     * @param idleConverter 为等待线程准备的目标转换器
      * @param <T>           目标类型
      * @return 目标
      */
