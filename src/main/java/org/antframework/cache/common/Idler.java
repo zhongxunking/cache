@@ -61,7 +61,7 @@ public class Idler {
                 });
             }
             if (ex.get() != null) {
-                throw ex.get();
+                return Exceptions.rethrow(ex.get());
             }
         } else {
             T value = (T) waitPoint.waitTarget();
@@ -95,9 +95,9 @@ public class Idler {
             try {
                 return completableFuture.get();
             } catch (InterruptedException e) {
-                throw e;
+                return Exceptions.rethrow(e);
             } catch (ExecutionException e) {
-                throw e.getCause();
+                return Exceptions.rethrow(e.getCause());
             }
         }
 

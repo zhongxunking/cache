@@ -8,6 +8,7 @@
  */
 package org.antframework.cache.core;
 
+import org.antframework.cache.common.Exceptions;
 import org.antframework.cache.lock.Locker;
 import org.antframework.cache.serialize.Serializer;
 
@@ -62,7 +63,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     protected <T> T load(String key, Callable<T> valueLoader, Consumer<T> putCallback) {
         T value;
         if (isTransactionalRemoved(key)) {
-            value = valueLoader.call();
+            value = Exceptions.call(valueLoader);
         } else {
             value = loadInSafe(key, () -> {
                 T loadedValue;
@@ -93,7 +94,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
      * @return 值
      */
     protected <T> T loadInSafe(String key, Callable<T> valueLoader) {
-        return valueLoader.call();
+        return Exceptions.call(valueLoader);
     }
 
     @Override
@@ -176,7 +177,13 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
                     if (maxWaitTime < 0) {
                         writeLock.lock();
                     } else {
-                        if (!writeLock.tryLock(maxWaitTime, TimeUnit.MILLISECONDS)) {
+                        boolean locked = false;
+                        try {
+                            locked = writeLock.tryLock(maxWaitTime, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            Exceptions.rethrow(e);
+                        }
+                        if (!locked) {
                             throw new RuntimeException("缓存[" + getName() + "]提交事务时对缓存key[" + key + "]加写锁等待超时[" + maxWaitTime + "ms]");
                         }
                     }
