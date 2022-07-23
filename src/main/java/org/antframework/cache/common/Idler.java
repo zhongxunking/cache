@@ -21,19 +21,19 @@ import java.util.function.Function;
  */
 public class Idler {
     // 目标标识与等待点的映射
-    private final Map<Object, WaitPoint> idWaitPoints = new ConcurrentHashMap<>();
+    private final Map<Object, WaitPoint> targetIdWaitPoints = new ConcurrentHashMap<>();
 
     /**
      * 获取目标（当多个线程同时获取同一个目标时，只会允许第一个线程去加载目标，其他线程等待加载结果并直接获取）
      *
-     * @param id            目标标识
+     * @param targetId      目标标识
      * @param targetLoader  需获取的目标的加载器
      * @param idleConverter 为等待线程准备的目标转换器
      * @param <T>           目标类型
      * @return 目标
      */
-    public <T> T acquire(Object id, Callable<T> targetLoader, Function<T, T> idleConverter) {
-        WaitPoint waitPoint = idWaitPoints.compute(id, (k, v) -> {
+    public <T> T acquire(Object targetId, Callable<T> targetLoader, Function<T, T> idleConverter) {
+        WaitPoint waitPoint = targetIdWaitPoints.compute(targetId, (k, v) -> {
             if (v == null) {
                 v = new WaitPoint();
             }
@@ -48,7 +48,7 @@ public class Idler {
             } catch (Throwable e) {
                 ex.set(e);
             } finally {
-                idWaitPoints.computeIfPresent(id, (k, v) -> {
+                targetIdWaitPoints.computeIfPresent(targetId, (k, v) -> {
                     if (v.amIRunner()) {
                         if (ex.get() == null) {
                             v.awakeWaiters(target.get());
