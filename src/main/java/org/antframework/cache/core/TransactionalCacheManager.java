@@ -15,6 +15,15 @@ import org.antframework.cache.CacheManager;
  */
 public interface TransactionalCacheManager extends CacheManager {
     /**
+     * 获取缓存
+     *
+     * @param cacheName 缓存名称
+     * @return 支持事务能力的缓存
+     */
+    @Override
+    TransactionalCache getCache(String cacheName);
+
+    /**
      * 获取事务
      *
      * @param propagation 事务传播行为
