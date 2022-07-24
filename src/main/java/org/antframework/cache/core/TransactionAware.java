@@ -24,7 +24,8 @@ public interface TransactionAware {
     /**
      * 获取当前事务上下文
      *
-     * @return 当前事务上下文（null表示不处于事务中）
+     * @return 当前事务上下文
+     * @throws IllegalStateException 当前不处于事务中
      */
     Map<Object, Object> getContext();
 }
