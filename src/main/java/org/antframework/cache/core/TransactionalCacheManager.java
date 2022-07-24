@@ -58,11 +58,6 @@ public interface TransactionalCacheManager extends CacheManager {
      */
     interface TransactionStatus {
         /**
-         * 是否是新事务
-         */
-        boolean isNewTransaction();
-
-        /**
          * 设置为只能回滚
          */
         void setRollbackOnly();
