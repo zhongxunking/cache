@@ -6,9 +6,11 @@
  * 修订记录:
  * @author 钟勋 2022-07-25 22:19 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.defense;
 
 import lombok.AllArgsConstructor;
+import org.antframework.cache.core.TransactionAware;
+import org.antframework.cache.core.common.AbstractTransactionalCacheManager;
 import org.antframework.cache.lock.LockerManager;
 import org.antframework.cache.serialize.SerializerManager;
 import org.antframework.cache.storage.StorageManager;

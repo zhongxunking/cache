@@ -6,7 +6,7 @@
  * 修订记录:
  * @author 钟勋 2022-07-20 17:55 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.common;
 
 import lombok.AllArgsConstructor;
 import org.antframework.cache.Cache;

@@ -6,7 +6,7 @@
  * 修订记录:
  * @author 钟勋 2022-07-23 14:24 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.common;
 
 import org.antframework.cache.Cache;
 import org.antframework.cache.CacheManager;

@@ -6,12 +6,16 @@
  * 修订记录:
  * @author 钟勋 2022-07-25 13:45 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.common;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.antframework.cache.core.Copiable;
+import org.antframework.cache.core.TransactionAware;
+import org.antframework.cache.core.TransactionalCache;
+import org.antframework.cache.core.TransactionalCacheManager;
 
 import java.util.*;
 

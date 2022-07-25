@@ -6,9 +6,12 @@
  * 修订记录:
  * @author 钟勋 2022-07-20 21:58 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.common;
 
 import org.antframework.cache.common.Exceptions;
+import org.antframework.cache.core.Copiable;
+import org.antframework.cache.core.TransactionAware;
+import org.antframework.cache.core.TransactionalCache;
 import org.antframework.cache.lock.Locker;
 import org.antframework.cache.serialize.Serializer;
 

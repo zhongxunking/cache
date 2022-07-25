@@ -6,10 +6,12 @@
  * 修订记录:
  * @author 钟勋 2022-07-21 13:21 创建
  */
-package org.antframework.cache.core;
+package org.antframework.cache.core.defense;
 
 import org.antframework.cache.common.Idler;
 import org.antframework.cache.common.Null;
+import org.antframework.cache.core.TransactionAware;
+import org.antframework.cache.core.common.AbstractTransactionalCache;
 import org.antframework.cache.lock.Locker;
 import org.antframework.cache.serialize.Serializer;
 import org.antframework.cache.storage.Storage;
