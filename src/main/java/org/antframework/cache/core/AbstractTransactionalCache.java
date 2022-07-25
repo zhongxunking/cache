@@ -45,8 +45,8 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
 
     @Override
     protected byte[] get(String key) {
-        if (isTransactionalRemoved(key)) {
-            return null;
+        if (isTransactionalModified(key)) {
+            return getTransactionalModifiedSet().getModifiedValue(key);
         }
         return getFromStorage(key);
     }
@@ -62,7 +62,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     @Override
     protected <T> T load(String key, Callable<T> valueLoader, Consumer<T> putCallback) {
         T value;
-        if (isTransactionalRemoved(key)) {
+        if (isTransactionalModified(key)) {
             value = Exceptions.call(valueLoader);
         } else {
             value = loadInSafe(key, () -> {
@@ -99,7 +99,9 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
 
     @Override
     protected void put(String key, byte[] value) {
-        if (!isTransactionalRemoved(key)) {
+        if (transactionAware.isActive()) {
+            getTransactionalModifiedSet().addPut(key, value);
+        } else {
             putInStorage(key, value);
         }
     }
@@ -115,7 +117,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     @Override
     protected void remove(String key) {
         if (transactionAware.isActive()) {
-            getTransactionalRemovedKeys().add(key);
+            getTransactionalModifiedSet().addRemovedKey(key);
         } else {
             removeInStorage(key);
         }
@@ -131,48 +133,90 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     @Override
     public void flush(Runnable callback) {
         if (transactionAware.isActive()) {
-            getTransactionalRemovedKeys().flush(callback);
+            getTransactionalModifiedSet().flush(callback);
         } else {
             callback.run();
         }
     }
 
-    // 是否在事务中已被删除
-    private boolean isTransactionalRemoved(String key) {
-        return transactionAware.isActive() && getTransactionalRemovedKeys().contain(key);
+    // 键值对是否在事务中被修改
+    private boolean isTransactionalModified(String key) {
+        return transactionAware.isActive() && getTransactionalModifiedSet().isModified(key);
     }
 
-    // 获取在事务中被删除的键集合
-    private RemovedKeys getTransactionalRemovedKeys() {
-        Map<Object, Object> context = transactionAware.getContext();
-        RemovedKeys removedKeys = (RemovedKeys) context.get(RemovedKeys.class);
-        if (removedKeys == null) {
-            removedKeys = new RemovedKeys();
-            context.put(RemovedKeys.class, removedKeys);
+    // 获取事务中的修改集
+    private ModifiedSet getTransactionalModifiedSet() {
+        Map<Copiable, Copiable> context = transactionAware.getContext();
+        ModifiedSet modifiedSet = (ModifiedSet) context.get(ModifiedSetKey.INSTANCE);
+        if (modifiedSet == null) {
+            modifiedSet = new ModifiedSet();
+            context.put(ModifiedSetKey.INSTANCE, modifiedSet);
         }
-        return removedKeys;
+        return modifiedSet;
     }
 
-    // 被删除的键集合
-    private class RemovedKeys {
-        // 键集合
-        private final Set<String> keys = new TreeSet<>();
+    // 修改集在上下文中的key
+    private static class ModifiedSetKey implements Copiable {
+        // 实例
+        static final ModifiedSetKey INSTANCE = new ModifiedSetKey();
 
-        // 新增
-        void add(String key) {
-            keys.add(key);
+        private ModifiedSetKey() {
         }
 
-        // 是否包含
-        boolean contain(String key) {
-            return keys.contains(key);
+        @Override
+        public Copiable copy() {
+            return this;
+        }
+    }
+
+    // 修改集
+    private class ModifiedSet implements Copiable {
+        // 被删除的键集合
+        private final Set<String> removedKeys = new HashSet<>();
+        // 被设置的键值对集合
+        private final Map<String, byte[]> puts = new HashMap<>();
+
+        // 新增被删除的key
+        void addRemovedKey(String removedKey) {
+            removedKeys.add(removedKey);
+            puts.remove(removedKey);
+        }
+
+        // 新增键值对
+        void addPut(String key, byte[] value) {
+            puts.put(key, value);
+            removedKeys.remove(key);
+        }
+
+        // 键值对是否被修改
+        boolean isModified(String key) {
+            return removedKeys.contains(key) || puts.containsKey(key);
+        }
+
+        // 获取被修改的值
+        byte[] getModifiedValue(String key) {
+            return puts.get(key);
+        }
+
+        @Override
+        public Copiable copy() {
+            ModifiedSet copiedThis = new ModifiedSet();
+            copiedThis.removedKeys.addAll(removedKeys);
+            copiedThis.puts.putAll(puts);
+            return copiedThis;
         }
 
         // 应用
         void flush(Runnable callback) {
-            List<Lock> writeLocks = new ArrayList<>(keys.size());
+            // 获取所有被修改的键值对key
+            Set<String> modifiedKeys = new TreeSet<>();
+            modifiedKeys.addAll(removedKeys);
+            modifiedKeys.addAll(puts.keySet());
+            // 加锁
+            boolean callbackSuccess = false;
+            List<Lock> writeLocks = new ArrayList<>(modifiedKeys.size());
             try {
-                for (String key : keys) {
+                for (String key : modifiedKeys) {
                     Lock writeLock = locker.getRWLock(key).writeLock();
                     if (maxWaitTime < 0) {
                         writeLock.lock();
@@ -188,18 +232,33 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
                         }
                     }
                     writeLocks.add(writeLock);
+                }
+                // 删除所有被修改的键值对
+                for (String key : modifiedKeys) {
                     removeInStorage(key);
                 }
+                // 回调
                 callback.run();
+                callbackSuccess = true;
             } finally {
-                for (int i = writeLocks.size() - 1; i >= 0; i--) {
-                    try {
-                        writeLocks.get(i).unlock();
-                    } catch (Throwable e) {
-                        // 忽略
+                try {
+                    if (callbackSuccess) {
+                        // 设置put操作的键值对
+                        puts.forEach(AbstractTransactionalCache.this::putInStorage);
                     }
+                } finally {
+                    // 解锁
+                    for (int i = writeLocks.size() - 1; i >= 0; i--) {
+                        try {
+                            writeLocks.get(i).unlock();
+                        } catch (Throwable e) {
+                            // 忽略
+                        }
+                    }
+                    // 清理上下文
+                    removedKeys.clear();
+                    puts.clear();
                 }
-                keys.clear();
             }
         }
     }

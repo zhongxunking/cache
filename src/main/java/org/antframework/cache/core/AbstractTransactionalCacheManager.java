@@ -285,12 +285,12 @@ public abstract class AbstractTransactionalCacheManager<T extends TransactionalC
 
         @Override
         public TxContext copy() {
-            TxContext copiedTxContext = new TxContext();
-            cacheNameContexts.forEach((cacheName, context) -> context.forEach((k, v) -> copiedTxContext.getCacheContext(cacheName).put(k.copy(), v.copy())));
+            TxContext copiedThis = new TxContext();
+            cacheNameContexts.forEach((cacheName, context) -> context.forEach((k, v) -> copiedThis.getCacheContext(cacheName).put(k.copy(), v.copy())));
             if (rollbackOnly) {
-                copiedTxContext.setRollbackOnly();
+                copiedThis.setRollbackOnly();
             }
-            return copiedTxContext;
+            return copiedThis;
         }
 
         // 缓存链
