@@ -27,5 +27,5 @@ public interface TransactionAware {
      * @return 当前事务上下文
      * @throws IllegalStateException 当前不处于事务中
      */
-    Map<Object, Object> getContext();
+    Map<Copiable, Copiable> getContext();
 }

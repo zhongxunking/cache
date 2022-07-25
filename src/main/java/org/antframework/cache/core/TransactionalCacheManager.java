@@ -47,10 +47,10 @@ public interface TransactionalCacheManager extends CacheManager {
     void rollback(TransactionStatus status);
 
     /**
-     * 转播行为
+     * 传播行为
      */
     enum Propagation {
-        REQUIRED, SUPPORTS, MANDATORY, REQUIRES_NEW, NOT_SUPPORTED, NEVER
+        REQUIRED, REQUIRES_NEW, NESTED, SUPPORTS, NOT_SUPPORTED, MANDATORY, NEVER
     }
 
     /**
