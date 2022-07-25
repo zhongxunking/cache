@@ -27,8 +27,8 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     private final TransactionAware transactionAware;
     // 加锁器
     private final Locker locker;
-    // 事务提交时加写锁最长等待时长（单位：毫秒，小于0表示永远等待直到加锁成功）
-    private final long maxWaitTime;
+    // 事务提交时加写锁最长等待时长（单位：毫秒，null表示永远等待直到加锁成功）
+    private final Long maxLockWaitTime;
 
     public AbstractTransactionalCache(String name,
                                       boolean allowNull,
@@ -36,11 +36,11 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
                                       Serializer serializer,
                                       TransactionAware transactionAware,
                                       Locker locker,
-                                      long maxWaitTime) {
+                                      Long maxLockWaitTime) {
         super(name, allowNull, keyConverter, serializer);
         this.transactionAware = transactionAware;
         this.locker = locker;
-        this.maxWaitTime = maxWaitTime;
+        this.maxLockWaitTime = maxLockWaitTime;
     }
 
     @Override
@@ -218,17 +218,17 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
             try {
                 for (String key : modifiedKeys) {
                     Lock writeLock = locker.getRWLock(key).writeLock();
-                    if (maxWaitTime < 0) {
+                    if (maxLockWaitTime == null) {
                         writeLock.lock();
                     } else {
                         boolean locked = false;
                         try {
-                            locked = writeLock.tryLock(maxWaitTime, TimeUnit.MILLISECONDS);
+                            locked = writeLock.tryLock(maxLockWaitTime, TimeUnit.MILLISECONDS);
                         } catch (InterruptedException e) {
                             Exceptions.rethrow(e);
                         }
                         if (!locked) {
-                            throw new RuntimeException("缓存[" + getName() + "]提交事务时对缓存key[" + key + "]加写锁等待超时[" + maxWaitTime + "ms]");
+                            throw new RuntimeException(String.format("缓存[%s]提交事务时对缓存key[%s]加写锁等待超时[%dms]", getName(), key, maxLockWaitTime));
                         }
                     }
                     writeLocks.add(writeLock);

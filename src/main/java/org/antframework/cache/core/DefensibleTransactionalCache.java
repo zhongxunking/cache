@@ -46,12 +46,12 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
                                         Serializer serializer,
                                         TransactionAware transactionAware,
                                         Locker locker,
-                                        long maxWaitTime,
+                                        Long maxLockWaitTime,
                                         Storage storage,
                                         Long liveTime,
                                         long nullValueLiveTime,
                                         double liveTimeFloatRate) {
-        super(name, allowNull, keyConverter, serializer, transactionAware, locker, maxWaitTime);
+        super(name, allowNull, keyConverter, serializer, transactionAware, locker, maxLockWaitTime);
         this.serializer = serializer;
         this.storage = storage;
         this.liveTime = liveTime;
