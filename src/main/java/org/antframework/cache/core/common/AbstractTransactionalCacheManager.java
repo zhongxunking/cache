@@ -163,9 +163,7 @@ public abstract class AbstractTransactionalCacheManager<T extends TransactionalC
         return frame;
     }
 
-    /**
-     * 内部的事务感知
-     */
+    // 内部的事务感知
     @AllArgsConstructor(access = AccessLevel.PACKAGE)
     private class InnerTransactionAware implements TransactionAware {
         // 缓存名称
@@ -186,9 +184,7 @@ public abstract class AbstractTransactionalCacheManager<T extends TransactionalC
         }
     }
 
-    /**
-     * 内部的事务状态
-     */
+    // 内部的事务状态
     @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
     @Getter(AccessLevel.PACKAGE)
     private class InnerTransactionStatus implements TransactionStatus {
@@ -223,9 +219,7 @@ public abstract class AbstractTransactionalCacheManager<T extends TransactionalC
         }
     }
 
-    /**
-     * 栈桢
-     */
+    // 栈桢
     @Getter
     private class Frame {
         // 事务是否已开启
