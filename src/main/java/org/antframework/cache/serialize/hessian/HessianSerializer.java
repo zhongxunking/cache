@@ -17,6 +17,7 @@ import org.antframework.cache.serialize.Serializer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Hessian序列化器
@@ -33,8 +34,11 @@ public class HessianSerializer implements Serializer {
 
     @Override
     public byte[] serialize(Object obj) {
-        if (obj == null || obj instanceof byte[]) {
-            return (byte[]) obj;
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof byte[]) {
+            return Arrays.copyOf((byte[]) obj, ((byte[]) obj).length);
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -52,8 +56,11 @@ public class HessianSerializer implements Serializer {
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> type) {
-        if (bytes == null || type == byte[].class) {
-            return (T) bytes;
+        if (bytes == null) {
+            return null;
+        }
+        if (type == byte[].class) {
+            return (T) Arrays.copyOf(bytes, bytes.length);
         }
 
         Object value;
