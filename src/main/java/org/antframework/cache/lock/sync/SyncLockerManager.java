@@ -21,10 +21,10 @@ import java.util.function.BinaryOperator;
  */
 @AllArgsConstructor
 public class SyncLockerManager extends AbstractManager<Locker> implements LockerManager {
-    // Sync上下文
-    private final SyncContext syncContext;
     // key生成器
     private final BinaryOperator<String> keyGenerator;
+    // Sync上下文
+    private final SyncContext syncContext;
 
     @Override
     protected Locker create(String name) {
