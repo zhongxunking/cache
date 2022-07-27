@@ -72,7 +72,7 @@ public abstract class AbstractCache implements Cache {
         }
         return load(convertKey(key), valueLoader, value -> {
             if (value != null || allowNull) {
-                put(key, value);
+                put(convertKey(key), serializeValue(value), true);
             }
         });
     }
@@ -90,25 +90,28 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public void put(Object key, Object value) {
-        byte[] storingValue;
-        if (value == null) {
-            if (!allowNull) {
-                throw new IllegalArgumentException("value不能为null");
-            }
-            storingValue = Null.getBytes();
-        } else {
-            storingValue = serializer.serialize(value);
+        if (value == null && !allowNull) {
+            throw new IllegalArgumentException("value不能为null");
         }
-        put(convertKey(key), storingValue);
+        put(convertKey(key), serializeValue(value), false);
+    }
+
+    // 序列化值
+    private byte[] serializeValue(Object value) {
+        if (value == null) {
+            return Null.getBytes();
+        }
+        return serializer.serialize(value);
     }
 
     /**
      * 设置缓存键值对
      *
-     * @param key   缓存键
-     * @param value 缓存值
+     * @param key     缓存键
+     * @param value   缓存值
+     * @param loading 是否正处于加载值中
      */
-    protected abstract void put(String key, byte[] value);
+    protected abstract void put(String key, byte[] value, boolean loading);
 
     @Override
     public void remove(Object key) {

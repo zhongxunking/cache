@@ -101,11 +101,17 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     }
 
     @Override
-    protected void put(String key, byte[] value) {
-        if (transactionAware.isActive()) {
-            getTransactionalModifiedSet().addPut(key, value);
+    protected void put(String key, byte[] value, boolean loading) {
+        if (loading) {
+            if (!isTransactionalModified(key)) {
+                putInStorage(key, value);
+            }
         } else {
-            putInStorage(key, value);
+            if (transactionAware.isActive()) {
+                getTransactionalModifiedSet().addPut(key, value);
+            } else {
+                putInStorage(key, value);
+            }
         }
     }
 
