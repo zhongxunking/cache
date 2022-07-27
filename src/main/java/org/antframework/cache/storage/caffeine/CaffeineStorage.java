@@ -33,7 +33,7 @@ public class CaffeineStorage implements Storage {
     }
 
     @Override
-    public void put(String key, byte[] value, long liveTime) {
+    public void put(String key, byte[] value, Long liveTime) {
         cache.put(key, value); // Caffeine不支持动态设置存活时长，故而忽略
     }
 

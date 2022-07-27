@@ -81,7 +81,7 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     protected void putInStorage(String key, byte[] value) {
         Long realLiveTime = computeLiveTime(value);
         if (realLiveTime == null) {
-            storage.put(key, value, -1);
+            storage.put(key, value, null);
         } else if (realLiveTime > 0) {
             storage.put(key, value, realLiveTime);
         }

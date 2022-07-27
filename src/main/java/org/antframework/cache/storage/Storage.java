@@ -32,9 +32,9 @@ public interface Storage {
      *
      * @param key      键
      * @param value    值
-     * @param liveTime 存活时长（单位：毫秒，负数表示不过期）
+     * @param liveTime 存活时长（单位：毫秒，null表示不过期）
      */
-    void put(String key, byte[] value, long liveTime);
+    void put(String key, byte[] value, Long liveTime);
 
     /**
      * 删除键值对
