@@ -25,7 +25,7 @@ public class OnoffTransactionalCache implements TransactionalCache {
     private final BooleanSupplier onoffSupplier;
     // 开启时的缓存
     private final TransactionalCache onCache;
-    // 关闭时缓存
+    // 关闭时的缓存
     private final TransactionalCache offCache;
 
     @Override
