@@ -98,11 +98,35 @@ public class RingCounter implements Counter {
             });
         });
         // 计算加载统计
-        Counter.Statistic.Detail load = new Counter.Statistic.Detail(total.load.hits.sum(), total.load.hitsTimeCost.sum() / total.load.hits.sum(), total.load.misses.sum(), total.load.missesTimeCost.sum() / total.load.misses.sum());
+        long averageLoadHitTimeCost = -1;
+        if (total.load.hits.sum() > 0) {
+            averageLoadHitTimeCost = total.load.hitsTimeCost.sum() / total.load.hits.sum();
+        }
+        long averageLoadMissTimeCost = -1;
+        if (total.load.misses.sum() > 0) {
+            averageLoadMissTimeCost = total.load.missesTimeCost.sum() / total.load.misses.sum();
+        }
+        Counter.Statistic.Detail load = new Counter.Statistic.Detail(
+                total.load.hits.sum(),
+                averageLoadHitTimeCost,
+                total.load.misses.sum(),
+                averageLoadMissTimeCost);
         // 计算所有仓库统计
         SortedMap<String, Counter.Statistic.Detail> orderedNameStorages = new TreeMap<>();
         total.orderedNameStorages.forEach((k, v) -> {
-            Counter.Statistic.Detail storage = new Counter.Statistic.Detail(v.hits.sum(), v.hitsTimeCost.sum() / v.hits.sum(), v.misses.sum(), v.missesTimeCost.sum() / v.misses.sum());
+            long averageStorageHitTimeCost = -1;
+            if (v.hits.sum() > 0) {
+                averageStorageHitTimeCost = v.hitsTimeCost.sum() / v.hits.sum();
+            }
+            long averageStorageMissTimeCost = -1;
+            if (v.misses.sum() > 0) {
+                averageStorageMissTimeCost = v.missesTimeCost.sum() / v.misses.sum();
+            }
+            Counter.Statistic.Detail storage = new Counter.Statistic.Detail(
+                    v.hits.sum(),
+                    averageStorageHitTimeCost,
+                    v.misses.sum(),
+                    averageStorageMissTimeCost);
             orderedNameStorages.put(k, storage);
         });
         // 计算功效
