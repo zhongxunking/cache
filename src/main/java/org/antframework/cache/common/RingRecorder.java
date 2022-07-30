@@ -140,13 +140,13 @@ public class RingRecorder<T> {
      * @param <T> 观察的类型
      */
     @FunctionalInterface
-    interface Viewer<T> {
+    public interface Viewer<T> {
         /**
          * 观察
          *
-         * @param inder   序号
+         * @param index   序号
          * @param content 内容
          */
-        void view(long inder, T content);
+        void view(long index, T content);
     }
 }
