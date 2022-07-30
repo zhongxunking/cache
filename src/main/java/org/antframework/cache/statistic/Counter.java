@@ -77,7 +77,7 @@ public interface Counter {
         private final Detail load;
         // 有次序的名称与仓库统计的映射
         private final SortedMap<String, Detail> orderedNameStorages;
-        // 功效（实际读数据耗时/无缓存时读数据耗时；-1表示无法计算功效；值越小功效越强，比如：0.1表示因为缓存的存在读数据耗时缩短到原来的10%）
+        // 功效（实际读数据耗时/无缓存时读数据耗时；-1表示无法计算；值越小功效越强，比如：0.1表示因为缓存的存在读数据耗时缩短到原来的10%）
         private final double efficacy;
 
         /**
@@ -88,11 +88,11 @@ public interface Counter {
         public static class Detail {
             // 命中次数
             private final long hits;
-            // 平均的命中耗时（单位：毫秒）
+            // 平均的命中耗时（单位：毫秒；-1表示无法计算）
             private final long averageHitTimeCost;
             // 未命中次数
             private final long misses;
-            // 平均的未命中耗时（单位：毫秒）
+            // 平均的未命中耗时（单位：毫秒；-1表示无法计算）
             private final long averageMissTimeCost;
         }
     }
