@@ -132,7 +132,7 @@ public class RingCounter implements Counter {
         if (loadTimes <= 0) {
             return -1;
         }
-        double averageLoadTimeCost = ((double) (statistic.load.hitsTimeCost.sum() + statistic.load.missesTimeCost.sum())) / loadTimes;
+        double averageLoadTimeCost = ((double) statistic.load.hitsTimeCost.sum() + statistic.load.missesTimeCost.sum()) / loadTimes;
         // 计算总的读次数和缓存未命中次数
         if (statistic.orderedNameStorages.size() <= 0) {
             return -1;
