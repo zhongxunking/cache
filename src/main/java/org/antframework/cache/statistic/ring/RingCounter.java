@@ -6,7 +6,7 @@
  * 修订记录:
  * @author 钟勋 2022-07-30 14:06 创建
  */
-package org.antframework.cache.statistic.memory;
+package org.antframework.cache.statistic.ring;
 
 import org.antframework.cache.common.RingRecorder;
 import org.antframework.cache.statistic.Counter;
