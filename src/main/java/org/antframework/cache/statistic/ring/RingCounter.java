@@ -163,7 +163,7 @@ public class RingCounter implements Counter {
     private static class Statistic {
         // 加载统计
         final Detail load = new Detail();
-        // 有次序的仓库名称与仓库统计的映射
+        // 有次序的名称与仓库统计的映射
         final Map<String, Detail> orderedNameStorages = new ConcurrentHashMap<>();
 
         // 细节信息

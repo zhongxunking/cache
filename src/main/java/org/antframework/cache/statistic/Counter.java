@@ -44,7 +44,7 @@ public interface Counter {
      * 增加一次仓库命中
      *
      * @param time        时间戳
-     * @param orderedName 有次序的仓库名称
+     * @param orderedName 有次序的名称
      * @param timeCost    耗时（单位：毫秒）
      */
     void incStorageHits(long time, String orderedName, long timeCost);
@@ -53,7 +53,7 @@ public interface Counter {
      * 增加一次仓库未命中
      *
      * @param time        时间戳
-     * @param orderedName 有次序的仓库名称
+     * @param orderedName 有次序的名称
      * @param timeCost    耗时（单位：毫秒）
      */
     void incStorageMisses(long time, String orderedName, long timeCost);
@@ -75,7 +75,7 @@ public interface Counter {
     class Statistic {
         // 加载统计
         private final Detail load;
-        // 有次序的仓库名称与仓库统计的映射
+        // 有次序的名称与仓库统计的映射
         private final SortedMap<String, Detail> orderedNameStorages;
         // 功效（实际读数据耗时/无缓存时读数据耗时；-1表示无法计算功效；值越小功效越强，比如：0.1表示因为缓存的存在读数据耗时缩短到原来的10%）
         private final double efficacy;
