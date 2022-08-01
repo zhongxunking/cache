@@ -37,8 +37,8 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
     private final Storage storage;
     // 键值对存活时长（单位：毫秒，null表示不过期）
     private final Long liveTime;
-    // null值的存活时长（单位：毫秒）
-    private final long nullValueLiveTime;
+    // null值的存活时长（单位：毫秒，null表示不过期）
+    private final Long nullValueLiveTime;
     // 存活时长的浮动率（负数表示向下浮动，正数表示向上浮动）
     private final double liveTimeFloatRate;
 
@@ -51,14 +51,14 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
                                         Long maxLockWaitTime,
                                         Storage storage,
                                         Long liveTime,
-                                        long nullValueLiveTime,
+                                        Long nullValueLiveTime,
                                         double liveTimeFloatRate) {
         super(name, allowNull, keyConverter, serializer, transactionAware, locker, maxLockWaitTime);
         this.serializer = serializer;
         this.storage = storage;
         this.liveTime = liveTime;
         this.nullValueLiveTime = nullValueLiveTime;
-        this.liveTimeFloatRate = Math.max(liveTimeFloatRate, -1);
+        this.liveTimeFloatRate = liveTimeFloatRate;
     }
 
     @Override
@@ -89,15 +89,12 @@ public class DefensibleTransactionalCache extends AbstractTransactionalCache {
 
     // 计算存活时长（null表示不过期）
     private Long computeLiveTime(byte[] value) {
-        long realLiveTime;
-        if (Null.is(value)) {
-            realLiveTime = nullValueLiveTime;
-        } else {
-            if (liveTime == null) {
-                return null;
-            }
-            realLiveTime = liveTime;
+        Long time = Null.is(value) ? nullValueLiveTime : liveTime;
+        if (time == null) {
+            return null;
         }
+
+        long realLiveTime = time;
         int maxFloat = (int) (realLiveTime * liveTimeFloatRate);
         if (maxFloat > 0) {
             realLiveTime += RANDOM.nextInt(maxFloat);

@@ -30,14 +30,14 @@ public class DefensibleTransactionalCacheManager extends AbstractTransactionalCa
     private final SerializerManager serializerManager;
     // 加锁器管理器
     private final LockerManager lockerManager;
-    // 事务提交时加写锁最长等待时长（单位：毫秒，null表示永远等待直到加锁成功）
-    private final Long maxLockWaitTime;
+    // 事务提交时加写锁最长等待时长提供者（返回值单位：毫秒，返回值为null表示永远等待直到加锁成功）
+    private final Function<String, Long> maxLockWaitTimeSupplier;
     // 仓库管理器
     private final StorageManager storageManager;
-    // 键值对存活时长（单位：毫秒，null表示不过期）
-    private final Long liveTime;
-    // null值的存活时长（单位：毫秒）
-    private final long nullValueLiveTime;
+    // 键值对存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
+    private final Function<String, Long> liveTimeSupplier;
+    // null值的存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
+    private final Function<String, Long> nullValueLiveTimeSupplier;
     // 存活时长的浮动率（负数表示向下浮动，正数表示向上浮动）
     private final double liveTimeFloatRate;
 
@@ -50,10 +50,10 @@ public class DefensibleTransactionalCacheManager extends AbstractTransactionalCa
                 serializerManager.get(cacheName),
                 transactionAware,
                 lockerManager.get(cacheName),
-                maxLockWaitTime,
+                maxLockWaitTimeSupplier.apply(cacheName),
                 storageManager.get(cacheName),
-                liveTime,
-                nullValueLiveTime,
+                liveTimeSupplier.apply(cacheName),
+                nullValueLiveTimeSupplier.apply(cacheName),
                 liveTimeFloatRate);
     }
 }
