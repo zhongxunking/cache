@@ -21,12 +21,12 @@ import java.util.List;
 public class CompositeStorage implements Storage {
     // 名称
     private final String name;
+    // 仓库集
+    private final List<Storage> storages;
     // 默认的键值对存活时长
     private final Long defaultLiveTime;
     // 默认的null值存活时长
     private final Long defaultNullValueLiveTime;
-    // 仓库集
-    private final List<Storage> storages;
 
     @Override
     public String getName() {

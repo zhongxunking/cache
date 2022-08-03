@@ -38,8 +38,8 @@ public class CompositeStorageManager extends AbstractManager<Storage> implements
 
         return new CompositeStorage(
                 name,
+                storages,
                 defaultLiveTimeSupplier.apply(name),
-                defaultNullValueLiveTimeSupplier.apply(name),
-                storages);
+                defaultNullValueLiveTimeSupplier.apply(name));
     }
 }
