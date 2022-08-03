@@ -49,4 +49,14 @@ public class LocalRemoteStorageManager extends AbstractManager<Storage> implemen
             storage.localRemove(key);
         }
     }
+
+    /**
+     * 刷新所有本地仓库
+     */
+    public void refreshLocals() {
+        for (String name : getNames()) {
+            LocalRemoteStorage storage = (LocalRemoteStorage) get(name);
+            storage.refreshLocal();
+        }
+    }
 }

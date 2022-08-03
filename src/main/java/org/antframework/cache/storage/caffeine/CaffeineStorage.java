@@ -10,13 +10,16 @@ package org.antframework.cache.storage.caffeine;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.AllArgsConstructor;
+import org.antframework.cache.storage.KeyEnumerable;
 import org.antframework.cache.storage.Storage;
+
+import java.util.Set;
 
 /**
  * Caffeine仓库
  */
 @AllArgsConstructor
-public class CaffeineStorage implements Storage {
+public class CaffeineStorage implements Storage, KeyEnumerable {
     // 名称
     private final String name;
     // Caffeine缓存
@@ -40,5 +43,10 @@ public class CaffeineStorage implements Storage {
     @Override
     public void remove(String key) {
         cache.invalidate(key);
+    }
+
+    @Override
+    public Set<String> getKeys() {
+        return cache.asMap().keySet();
     }
 }

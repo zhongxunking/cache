@@ -10,7 +10,11 @@ package org.antframework.cache.storage.localremote;
 
 import lombok.AllArgsConstructor;
 import org.antframework.cache.common.Null;
+import org.antframework.cache.storage.KeyEnumerable;
 import org.antframework.cache.storage.Storage;
+
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * 本地和远程复合型仓库
@@ -74,5 +78,21 @@ public class LocalRemoteStorage implements Storage {
      */
     public void localRemove(String key) {
         localStorage.remove(key);
+    }
+
+    /**
+     * 刷新本地仓库
+     */
+    public void refreshLocal() {
+        if (localStorage instanceof KeyEnumerable) {
+            Set<String> keys = ((KeyEnumerable) localStorage).getKeys();
+            for (String key : keys) {
+                byte[] localValue = localStorage.get(key);
+                byte[] remoteValue = remoteStorage.get(key);
+                if (!Arrays.equals(localValue, remoteValue)) {
+                    localStorage.remove(key);
+                }
+            }
+        }
     }
 }
