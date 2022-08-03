@@ -35,23 +35,23 @@ public class CompositeStorage implements Storage {
 
     @Override
     public byte[] get(String key) {
-        byte[] bytes = null;
+        byte[] value = null;
 
         int index;
         for (index = 0; index < storages.size(); index++) {
-            bytes = storages.get(index).get(key);
-            if (bytes != null) {
+            value = storages.get(index).get(key);
+            if (value != null) {
                 break;
             }
         }
-        if (bytes != null) {
-            Long liveTime = Null.is(bytes) ? defaultNullValueLiveTime : defaultLiveTime;
+        if (value != null) {
+            Long liveTime = Null.is(value) ? defaultNullValueLiveTime : defaultLiveTime;
             for (int i = index - 1; i >= 0; i--) {
-                storages.get(i).put(key, bytes, liveTime);
+                storages.get(i).put(key, value, liveTime);
             }
         }
 
-        return bytes;
+        return value;
     }
 
     @Override
