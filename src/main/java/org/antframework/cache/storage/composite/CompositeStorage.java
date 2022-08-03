@@ -23,9 +23,9 @@ public class CompositeStorage implements Storage {
     private final String name;
     // 仓库集
     private final List<Storage> storages;
-    // 默认的键值对存活时长
+    // 默认的键值对存活时长（单位：毫秒，null表示不过期）
     private final Long defaultLiveTime;
-    // 默认的null值存活时长
+    // 默认的null值存活时长（单位：毫秒，null表示不过期）
     private final Long defaultNullValueLiveTime;
 
     @Override

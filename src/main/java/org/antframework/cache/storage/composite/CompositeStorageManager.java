@@ -24,9 +24,9 @@ import java.util.function.Function;
 public class CompositeStorageManager extends AbstractManager<Storage> implements StorageManager {
     // 仓库管理器集
     private final List<StorageManager> storageManagers;
-    // 默认的键值对存活时长提供者
+    // 默认的键值对存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
     private final Function<String, Long> defaultLiveTimeSupplier;
-    // 默认的null值存活时长提供者
+    // 默认的null值存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
     private final Function<String, Long> defaultNullValueLiveTimeSupplier;
 
     @Override
