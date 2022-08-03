@@ -47,7 +47,7 @@ public class CompositeStorage implements Storage {
         if (value != null) {
             Long liveTime = Null.is(value) ? defaultNullValueLiveTime : defaultLiveTime;
             for (int i = index - 1; i >= 0; i--) {
-                storages.get(i).put(key, value, liveTime);
+                storages.get(i).put(key, value, liveTime, false);
             }
         }
 
@@ -55,12 +55,12 @@ public class CompositeStorage implements Storage {
     }
 
     @Override
-    public void put(String key, byte[] value, Long liveTime) {
+    public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         for (int i = 0; i < storages.size() - 1; i++) {
             storages.get(i).remove(key);
         }
         for (int i = storages.size() - 1; i >= 0; i--) {
-            storages.get(i).put(key, value, liveTime);
+            storages.get(i).put(key, value, liveTime, valueChanged);
         }
     }
 

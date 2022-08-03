@@ -104,13 +104,13 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     protected void put(String key, byte[] value, boolean loading) {
         if (loading) {
             if (!isTransactionalModified(key)) {
-                putInStorage(key, value);
+                putInStorage(key, value, false);
             }
         } else {
             if (transactionAware.isActive()) {
                 getTransactionalModifiedSet().addPut(key, value);
             } else {
-                putInStorage(key, value);
+                putInStorage(key, value, true);
             }
         }
     }
@@ -118,10 +118,11 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
     /**
      * 向仓库设置键值对
      *
-     * @param key   键
-     * @param value 值
+     * @param key          键
+     * @param value        值
+     * @param valueChanged 值是否被修改
      */
-    protected abstract void putInStorage(String key, byte[] value);
+    protected abstract void putInStorage(String key, byte[] value, boolean valueChanged);
 
     @Override
     protected void remove(String key) {
@@ -253,7 +254,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
                 try {
                     if (callbackSuccess) {
                         // 设置put操作的键值对
-                        puts.forEach(AbstractTransactionalCache.this::putInStorage);
+                        puts.forEach((key, value) -> putInStorage(key, value, true));
                     }
                 } finally {
                     // 解锁

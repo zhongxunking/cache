@@ -39,17 +39,17 @@ public class LocalRemoteStorage implements Storage {
         if (value == null) {
             value = remoteStorage.get(key);
             if (value != null) {
-                localStorage.put(key, value, Null.is(value) ? localNullValueLiveTime : localLiveTime);
+                localStorage.put(key, value, Null.is(value) ? localNullValueLiveTime : localLiveTime, false);
             }
         }
         return value;
     }
 
     @Override
-    public void put(String key, byte[] value, Long liveTime) {
+    public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         localStorage.remove(key);
-        remoteStorage.put(key, value, liveTime);
-        localStorage.put(key, value, liveTime);
+        remoteStorage.put(key, value, liveTime, valueChanged);
+        localStorage.put(key, value, liveTime, valueChanged);
     }
 
     @Override

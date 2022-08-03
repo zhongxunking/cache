@@ -30,11 +30,12 @@ public interface Storage {
     /**
      * 设置键值对
      *
-     * @param key      键
-     * @param value    值
-     * @param liveTime 存活时长（单位：毫秒，null表示不过期）
+     * @param key          键
+     * @param value        值
+     * @param liveTime     存活时长（单位：毫秒，null表示不过期）
+     * @param valueChanged 值是否被修改
      */
-    void put(String key, byte[] value, Long liveTime);
+    void put(String key, byte[] value, Long liveTime, boolean valueChanged);
 
     /**
      * 删除键值对

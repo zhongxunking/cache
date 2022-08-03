@@ -54,8 +54,8 @@ public class StatisticalStorageDecorator implements Storage {
     }
 
     @Override
-    public void put(String key, byte[] value, Long liveTime) {
-        target.put(key, value, liveTime);
+    public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
+        target.put(key, value, liveTime, valueChanged);
     }
 
     @Override

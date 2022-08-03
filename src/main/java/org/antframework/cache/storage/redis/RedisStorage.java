@@ -36,7 +36,7 @@ public class RedisStorage implements Storage {
     }
 
     @Override
-    public void put(String key, byte[] value, Long liveTime) {
+    public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         redisExecutor.put(keyGenerator.apply(name, key), value, liveTime);
     }
 
