@@ -27,6 +27,8 @@ public class LocalRemoteStorage implements Storage {
     private final Long localLiveTime;
     // 本地null值存活时长（单位：毫秒，null表示不过期）
     private final Long localNullValueLiveTime;
+    // 远程发布器
+    private final RemotePublisher publisher;
 
     @Override
     public String getName() {
@@ -51,11 +53,26 @@ public class LocalRemoteStorage implements Storage {
         localStorage.remove(key);
         remoteStorage.put(key, value, liveTime, valueChanged);
         localStorage.put(key, value, liveTime, valueChanged);
+        if (valueChanged) {
+            // 发布消息
+            publisher.change(name, key);
+        }
     }
 
     @Override
     public void remove(String key) {
         localStorage.remove(key);
         remoteStorage.remove(key);
+        // 发布消息
+        publisher.change(name, key);
+    }
+
+    /**
+     * 删除本地仓库的键值对
+     *
+     * @param key 键
+     */
+    public void localRemove(String key) {
+        localStorage.remove(key);
     }
 }
