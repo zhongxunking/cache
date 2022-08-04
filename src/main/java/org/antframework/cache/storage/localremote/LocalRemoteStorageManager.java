@@ -19,7 +19,7 @@ import java.util.function.Function;
  * 本地和远程复合型仓库管理器
  */
 @AllArgsConstructor
-public class LocalRemoteStorageManager extends AbstractManager<Storage> implements StorageManager, RemoteListener {
+public class LocalRemoteStorageManager extends AbstractManager<Storage> implements StorageManager, ChangeListener {
     // 本地仓库管理器
     private final StorageManager localStorageManager;
     // 远程仓库管理器
@@ -28,8 +28,8 @@ public class LocalRemoteStorageManager extends AbstractManager<Storage> implemen
     private final Function<String, Long> localLiveTimeSupplier;
     // 本地null值存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
     private final Function<String, Long> localNullValueLiveTimeSupplier;
-    // 远程发布器
-    private final RemotePublisher publisher;
+    // 修改发布器
+    private final ChangePublisher publisher;
 
     @Override
     protected Storage create(String name) {
@@ -43,7 +43,7 @@ public class LocalRemoteStorageManager extends AbstractManager<Storage> implemen
     }
 
     @Override
-    public void change(String name, String key) {
+    public void listen(String name, String key) {
         if (getNames().contains(name)) {
             LocalRemoteStorage storage = (LocalRemoteStorage) get(name);
             storage.localRemove(key);
