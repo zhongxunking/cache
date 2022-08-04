@@ -20,13 +20,16 @@ import java.util.concurrent.*;
 public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
     // 队列
     private final BlockingQueue<Change> queue;
+    // 超时时间（单位：毫秒，null表示一直等待）
+    private final Long timeout;
     // 异步任务
     private final AsyncTask asyncTask;
 
-    public AbstractAsyncChangePublisher(int queueSize, int maxBatchSize, int publishThreads) {
-        queue = new ArrayBlockingQueue<>(queueSize);
-        asyncTask = new AsyncTask(maxBatchSize, publishThreads);
-        asyncTask.start();
+    public AbstractAsyncChangePublisher(int queueSize, Long timeout, int maxBatchSize, int publishThreads) {
+        this.queue = new ArrayBlockingQueue<>(queueSize);
+        this.timeout = timeout;
+        this.asyncTask = new AsyncTask(maxBatchSize, publishThreads);
+        this.asyncTask.start();
     }
 
     @Override
@@ -35,9 +38,17 @@ public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
         change.setName(name);
         change.setKey(key);
         try {
-            queue.put(change);
+            if (timeout == null) {
+                queue.put(change);
+            } else {
+                boolean success = queue.offer(change, timeout, TimeUnit.MILLISECONDS);
+                if (!success) {
+                    // todo 打印日志
+                }
+            }
         } catch (InterruptedException e) {
             // 忽略
+            // todo 打印日志
         }
     }
 
@@ -87,14 +98,17 @@ public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
                             doPublish(batch);
                         } catch (Throwable e) {
                             // 忽略
+                            // todo 打印日志
                         }
                     });
                 } catch (Throwable e) {
                     // 忽略
+                    // todo 打印日志
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException ex) {
                         // 忽略
+                        // todo 打印日志
                     }
                 }
             }
