@@ -97,15 +97,19 @@ public class SpringDataRedisChangeListenerContainer {
 
         @Override
         public void onMessage(Message message, byte[] pattern) {
-            ChangeBatch batch = serializer.deserialize(message.getBody(), ChangeBatch.class);
-            if (batch == null) {
-                return;
-            }
-            Set<ChangeListener> listenersCopy = listeners;
-            for (ChangeListener listener : listenersCopy) {
-                for (Change change : batch.getChanges()) {
-                    listener.listen(change.getName(), change.getKey());
+            try {
+                ChangeBatch batch = serializer.deserialize(message.getBody(), ChangeBatch.class);
+                if (batch == null) {
+                    return;
                 }
+                Set<ChangeListener> listenersCopy = listeners;
+                for (ChangeListener listener : listenersCopy) {
+                    for (Change change : batch.getChanges()) {
+                        listener.listen(change.getName(), change.getKey());
+                    }
+                }
+            } catch (Throwable e) {
+                // todo 打印日志
             }
         }
     }
