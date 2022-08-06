@@ -22,8 +22,8 @@ import java.util.function.Function;
  */
 @AllArgsConstructor
 public class DefensibleTransactionalCacheManager extends AbstractTransactionalCacheManager<DefensibleTransactionalCache> {
-    // 键和值是否允许为null
-    private final boolean allowNull;
+    // 键和值是否允许为null提供者
+    private final Function<String, Boolean> allowNullSupplier;
     // 键转换器
     private final Function<Object, String> keyConverter;
     // 序列化器管理器
@@ -45,7 +45,7 @@ public class DefensibleTransactionalCacheManager extends AbstractTransactionalCa
     protected DefensibleTransactionalCache createTransactionalCache(String cacheName, TransactionAware transactionAware) {
         return new DefensibleTransactionalCache(
                 cacheName,
-                allowNull,
+                allowNullSupplier.apply(cacheName),
                 keyConverter,
                 serializerManager.get(cacheName),
                 transactionAware,
