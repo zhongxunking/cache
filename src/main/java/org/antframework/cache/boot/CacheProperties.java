@@ -115,11 +115,34 @@ public class CacheProperties {
         @Valid
         private CachesDetail<Long> maxSize = new CachesDetail<>(10000L, new HashMap<>());
         /**
+         * 选填：刷新器配置
+         */
+        @NotNull
+        @Valid
+        private Refresher refresher = new Refresher();
+        /**
          * 选填：发布器配置
          */
         @NotNull
         @Valid
         private Publisher publisher = new Publisher();
+
+        /**
+         * 刷新器配置
+         */
+        @Getter
+        @Setter
+        public static class Refresher {
+            /**
+             * 选填：是否启用本地缓存刷新（true为启用，false为不启用；默认启用）
+             */
+            private boolean enable = true;
+            /**
+             * 选填：每隔多久将本地缓存与远程缓存不一致的键值对删掉（默认为5分钟）
+             */
+            @Min(0)
+            private long period = 5 * 60 * 1000;
+        }
 
         /**
          * 发布器配置
