@@ -32,6 +32,10 @@ public class CacheProperties {
      * 是否启用Cache的key
      */
     public static final String ENABLE_KEY = "ant.cache.enable";
+    /**
+     * 默认装饰事务管理器BeanPostProcessor的优先级
+     */
+    public static final int DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER = 0;
 
     /**
      * 选填：是否启用Cache（默认启用）
@@ -87,6 +91,10 @@ public class CacheProperties {
     @NotNull
     @Valid
     private Statistic statistic = new Statistic();
+    /**
+     * 选填：装饰事务管理器BeanPostProcessor的优先级（默认为0）
+     */
+    private int decorateTransactionManagerOrder = DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER;
 
     /**
      * 本地缓存配置
