@@ -38,8 +38,8 @@ public class DefensibleTransactionalCacheManager extends AbstractTransactionalCa
     private final Function<String, Long> liveTimeSupplier;
     // null值的存活时长提供者（返回值单位：毫秒，返回值为null表示不过期）
     private final Function<String, Long> nullValueLiveTimeSupplier;
-    // 存活时长的浮动率（负数表示向下浮动，正数表示向上浮动）
-    private final double liveTimeFloatRate;
+    // 存活时长的浮动率提供者（返回值为负数表示向下浮动，返回值为正数表示向上浮动）
+    private final Function<String, Double> liveTimeFloatRateSupplier;
 
     @Override
     protected DefensibleTransactionalCache createTransactionalCache(String cacheName, TransactionAware transactionAware) {
@@ -54,6 +54,6 @@ public class DefensibleTransactionalCacheManager extends AbstractTransactionalCa
                 storageManager.get(cacheName),
                 liveTimeSupplier.apply(cacheName),
                 nullValueLiveTimeSupplier.apply(cacheName),
-                liveTimeFloatRate);
+                liveTimeFloatRateSupplier.apply(cacheName));
     }
 }
