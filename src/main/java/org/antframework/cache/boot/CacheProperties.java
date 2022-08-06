@@ -107,9 +107,9 @@ public class CacheProperties {
          * 选填：本地缓存内键值对存活时长比率（比如：0.1表示本地缓存内的存活时长为标准存活时长的10%；默认为0.1）
          */
         @Min(0)
-        private double liveTimeScaleRate = 0.2;
+        private double liveTimeScaleRate = 0.1;
         /**
-         * 选填：各本地缓存内最大容量（-1表示无限制；默认为10000）
+         * 选填：各本地缓存的最大容量（-1表示无限制；默认为10000）
          */
         @NotNull
         @Valid
@@ -155,7 +155,7 @@ public class CacheProperties {
              */
             private boolean enable = true;
             /**
-             * 选填：各缓存键值对有变更时，对本地缓存发布消息的队列大小（默认为4096）
+             * 选填：各缓存键值对有变更时，发布消息的队列容量（默认为4096）
              */
             @Min(1)
             private int queueSize = 4096;
@@ -163,7 +163,7 @@ public class CacheProperties {
              * 选填：将通知消息放入队列时的超时时长（单位：毫秒；默认为5秒）
              */
             @Min(0)
-            private Long timeout = 5000L;
+            private Long inQueueTimeout = 5000L;
             /**
              * 选填；最多将多少个通知消息打包成一个发布消息（默认为100）
              */
@@ -211,7 +211,7 @@ public class CacheProperties {
         @Min(1)
         private long timeLength = 24 * 60 * 60 * 1000;
         /**
-         * 选填：统计时间粒度（单位：毫秒；默认为1分钟）
+         * 选填：统计的时间粒度（单位：毫秒；默认为1分钟）
          */
         @Min(1)
         private long timeGranularity = 60 * 1000;
