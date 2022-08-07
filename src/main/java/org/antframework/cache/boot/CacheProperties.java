@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.Ordered;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -32,10 +33,6 @@ public class CacheProperties {
      * 是否启用Cache的key
      */
     public static final String ENABLE_KEY = "ant.cache.enable";
-    /**
-     * 默认装饰事务管理器BeanPostProcessor的优先级
-     */
-    public static final int DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER = 0;
 
     /**
      * 选填：是否启用Cache（默认启用）
@@ -92,9 +89,11 @@ public class CacheProperties {
     @Valid
     private Statistic statistic = new Statistic();
     /**
-     * 选填：装饰事务管理器BeanPostProcessor的优先级（默认为0）
+     * 选填：BeanPostProcessor相关配置
      */
-    private int decorateTransactionManagerOrder = DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER;
+    @NotNull
+    @Valid
+    private BeanProcessor beanProcessor = new BeanProcessor();
 
     /**
      * 本地缓存配置
@@ -264,5 +263,30 @@ public class CacheProperties {
          */
         @NotNull
         private Map<String, T> caches;
+    }
+
+    /**
+     * BeanPostProcessor相关配置
+     */
+    @Getter
+    @Setter
+    public static class BeanProcessor {
+        /**
+         * 默认强制@Cacheable(sync=true)处理器的优先级
+         */
+        public static final int DEFAULT_FORCE_SYNC_ORDER = Ordered.LOWEST_PRECEDENCE - 200;
+        /**
+         * 默认装饰事务管理器BeanPostProcessor的优先级
+         */
+        public static final int DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER = Ordered.LOWEST_PRECEDENCE - 100;
+
+        /**
+         * 选填：强制@Cacheable(sync=true)处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 200）
+         */
+        private int forceSyncOrder = DEFAULT_FORCE_SYNC_ORDER;
+        /**
+         * 选填：装饰事务管理器BeanPostProcessor的优先级（默认为Ordered.LOWEST_PRECEDENCE - 100）
+         */
+        private int decorateTransactionManagerOrder = DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER;
     }
 }

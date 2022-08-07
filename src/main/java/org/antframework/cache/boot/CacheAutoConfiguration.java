@@ -10,6 +10,7 @@ package org.antframework.cache.boot;
 
 import lombok.AllArgsConstructor;
 import org.antframework.cache.CacheManager;
+import org.antframework.cache.boot.annotation.ForceSyncProcessor;
 import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor;
 import org.antframework.cache.common.DefaultKeyConverter;
@@ -62,11 +63,18 @@ import java.util.function.Function;
 @EnableConfigurationProperties(CacheProperties.class)
 @EnableCaching
 public class CacheAutoConfiguration {
+    // 强制@Cacheable(sync=true)的处理器
+    @Bean(name = "org.antframework.cache.boot.annotation.ForceSyncProcessor")
+    @ConditionalOnMissingBean(ForceSyncProcessor.class)
+    public ForceSyncProcessor forceSyncProcessor(CacheProperties properties) {
+        return new ForceSyncProcessor(properties.getBeanProcessor().getForceSyncOrder());
+    }
+
     // 事务管理器的缓存处理器
     @Bean(name = "org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor")
     @ConditionalOnMissingBean(TransactionManagerCacheProcessor.class)
     public TransactionManagerCacheProcessor cacheProcessor(CacheProperties properties) {
-        return new TransactionManagerCacheProcessor(properties.getDecorateTransactionManagerOrder());
+        return new TransactionManagerCacheProcessor(properties.getBeanProcessor().getDecorateTransactionManagerOrder());
     }
 
     // CacheManager适配器
