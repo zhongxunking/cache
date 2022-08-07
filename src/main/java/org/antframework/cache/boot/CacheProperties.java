@@ -103,19 +103,18 @@ public class CacheProperties {
     @Setter
     public static class Local {
         /**
+         * 是否启用本地缓存的key
+         */
+        public static final String ENABLE_KEY = "ant.cache.local.enable";
+
+        /**
          * 选填：是否启用本地缓存（true为启用，false为不启用；默认启用）
          */
         private boolean enable = true;
         /**
-         * 选填：本地缓存内键值对最长存活时长（单位：毫秒；默认为5分钟）
+         * 选填：键值对存活时长配置
          */
-        @Min(0)
-        private long maxLiveTime = 5 * 60 * 1000;
-        /**
-         * 选填：本地缓存内键值对存活时长比率（比如：0.1表示本地缓存内的存活时长为标准存活时长的10%；默认为0.1）
-         */
-        @Min(0)
-        private double liveTimeScaleRate = 0.1;
+        private LiveTime liveTime = new LiveTime();
         /**
          * 选填：各本地缓存的最大容量（-1表示无限制；默认为10000）
          */
@@ -134,6 +133,24 @@ public class CacheProperties {
         @NotNull
         @Valid
         private Publisher publisher = new Publisher();
+
+        /**
+         * 存活时长配置
+         */
+        @Getter
+        @Setter
+        public static class LiveTime {
+            /**
+             * 选填：本地缓存内键值对最长存活时长（单位：毫秒；默认为5分钟）
+             */
+            @Min(0)
+            private long max = 5 * 60 * 1000;
+            /**
+             * 选填：本地缓存内键值对存活时长比率（比如：0.1表示本地缓存内的存活时长为标准存活时长的10%；默认为0.1）
+             */
+            @Min(0)
+            private double scaleRate = 0.1;
+        }
 
         /**
          * 刷新器配置
@@ -159,6 +176,11 @@ public class CacheProperties {
         @Setter
         public static class Publisher {
             /**
+             * 是否启用修改发布器的key
+             */
+            public static final String ENABLE_KEY = "ant.cache.local.publisher.enable";
+
+            /**
              * 选填：各缓存内键值对有修改时，是否通知各本地缓存删除被修改的键值对（true为通知，false为不通知；默认通知）
              */
             private boolean enable = true;
@@ -168,10 +190,10 @@ public class CacheProperties {
             @Min(1)
             private int queueSize = 4096;
             /**
-             * 选填：将通知消息放入队列时的超时时长（单位：毫秒；默认为5秒）
+             * 选填：将通知消息放入队列时的超时时长（单位：毫秒；-1表示一直等待直到成功；默认为5秒）
              */
-            @Min(0)
-            private Long inQueueTimeout = 5000L;
+            @Min(-1)
+            private long inQueueTimeout = 5000;
             /**
              * 选填；最多将多少个通知消息打包成一个发布消息（默认为100）
              */

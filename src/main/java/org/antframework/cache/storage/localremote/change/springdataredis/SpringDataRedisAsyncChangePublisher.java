@@ -29,12 +29,12 @@ public class SpringDataRedisAsyncChangePublisher extends AbstractAsyncChangePubl
 
     public SpringDataRedisAsyncChangePublisher(int queueSize,
                                                Long timeout,
-                                               int batchSize,
+                                               int maxBatchSize,
                                                int publishThreads,
                                                String channel,
                                                RedisConnectionFactory connectionFactory,
                                                Serializer serializer) {
-        super(queueSize, timeout, batchSize, publishThreads);
+        super(queueSize, timeout, maxBatchSize, publishThreads);
         this.channel = channel.getBytes(StandardCharsets.UTF_8);
         this.connectionFactory = connectionFactory;
         this.serializer = serializer;
