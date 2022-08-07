@@ -8,19 +8,25 @@
  */
 package org.antframework.cache.common;
 
+import lombok.AllArgsConstructor;
+
 import java.util.function.BinaryOperator;
 
 /**
  * 默认的key生成器
  */
+@AllArgsConstructor
 public class DefaultKeyGenerator implements BinaryOperator<String> {
     /**
      * 分隔符
      */
     public static final String SEPARATOR = "::";
 
+    // 命名空间
+    private final String namespace;
+
     @Override
     public String apply(String name, String key) {
-        return name + SEPARATOR + key;
+        return namespace + SEPARATOR + name + SEPARATOR + key;
     }
 }
