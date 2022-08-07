@@ -38,6 +38,7 @@ import org.antframework.cache.storage.redis.springdataredis.SpringDataRedisExecu
 import org.antframework.cache.storage.statistic.StatisticalStorageManagerDecorator;
 import org.antframework.sync.SyncContext;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -57,6 +58,7 @@ import java.util.function.Function;
  */
 @Configuration
 @ConditionalOnProperty(name = CacheProperties.ENABLE_KEY, havingValue = "true", matchIfMissing = true)
+@AutoConfigureBefore(org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class)
 @EnableConfigurationProperties(CacheProperties.class)
 @EnableCaching
 public class CacheAutoConfiguration {
