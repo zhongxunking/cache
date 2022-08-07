@@ -134,12 +134,24 @@ public class CacheAutoConfiguration {
         @Configuration
         @ConditionalOnMissingBean(StorageManager.class)
         public static class StorageManagerConfiguration {
+            /**
+             * 仓库有次序的名称
+             */
+            public static final String ORDERED_NAME = "0-Remote-Redis";
+
             // Redis仓库管理器
             @Bean(name = "org.antframework.cache.storage.StorageManager")
             @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "false")
-            public RedisStorageManager storageManager(RedisExecutor redisExecutor, CacheProperties properties, Environment environment) {
+            public StorageManager storageManager(RedisExecutor redisExecutor,
+                                                 CounterManager counterManager,
+                                                 CacheProperties properties,
+                                                 Environment environment) {
                 String namespace = computeNamespace(properties, environment);
-                return new RedisStorageManager(new DefaultKeyGenerator(namespace), redisExecutor);
+                StorageManager storageManager = new RedisStorageManager(new DefaultKeyGenerator(namespace), redisExecutor);
+                if (properties.getStatistic().isEnable()) {
+                    storageManager = new StatisticalStorageManagerDecorator(storageManager, ORDERED_NAME, counterManager);
+                }
+                return storageManager;
             }
 
             /**
