@@ -10,6 +10,7 @@ package org.antframework.cache.boot;
 
 import lombok.AllArgsConstructor;
 import org.antframework.cache.CacheManager;
+import org.antframework.cache.CacheTemplate;
 import org.antframework.cache.boot.annotation.ForceSyncProcessor;
 import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor;
@@ -82,6 +83,13 @@ public class CacheAutoConfiguration {
     @ConditionalOnMissingBean(org.springframework.cache.CacheManager.class)
     public CacheManagerAdapter cacheManager(CacheManager cacheManager) {
         return new CacheManagerAdapter(cacheManager);
+    }
+
+    // 缓存操作模板
+    @Bean(name = "org.antframework.cache.CacheTemplate")
+    @ConditionalOnMissingBean(TransactionalCacheManager.class)
+    public CacheTemplate cacheTemplate(TransactionalCacheManager cacheManager) {
+        return new CacheTemplate(cacheManager);
     }
 
     /**
