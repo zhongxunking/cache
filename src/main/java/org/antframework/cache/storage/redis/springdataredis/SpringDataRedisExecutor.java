@@ -9,56 +9,37 @@
 package org.antframework.cache.storage.redis.springdataredis;
 
 import lombok.AllArgsConstructor;
+import org.antframework.cache.common.redis.springdataredis.Redis;
 import org.antframework.cache.storage.redis.RedisExecutor;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.types.Expiration;
-
-import java.nio.charset.StandardCharsets;
-import java.util.function.Function;
 
 /**
  * 基于spring-data-redis的Redis执行器
  */
 @AllArgsConstructor
 public class SpringDataRedisExecutor implements RedisExecutor {
-    // Redis连接工厂
-    private final RedisConnectionFactory connectionFactory;
+    // Redis
+    private final Redis redis;
 
     @Override
     public byte[] get(String key) {
-        return execute(connection -> connection.get(convertKey(key)));
+        return redis.execute(connection -> connection.get(Redis.serialize(key)));
     }
 
     @Override
     public void put(String key, byte[] value, Long liveTime) {
-        execute(connection -> {
+        redis.execute(connection -> {
             if (liveTime == null) {
-                return connection.set(convertKey(key), value);
+                return connection.set(Redis.serialize(key), value);
             } else {
-                return connection.set(convertKey(key), value, Expiration.milliseconds(liveTime), RedisStringCommands.SetOption.upsert());
+                return connection.set(Redis.serialize(key), value, Expiration.milliseconds(liveTime), RedisStringCommands.SetOption.upsert());
             }
         });
     }
 
     @Override
     public void remove(String key) {
-        execute(connection -> connection.del(convertKey(key)));
-    }
-
-    // 执行
-    private <T> T execute(Function<RedisConnection, T> callback) {
-        try (RedisConnection connection = connectionFactory.getConnection()) {
-            return callback.apply(connection);
-        }
-    }
-
-    // 转换key
-    private byte[] convertKey(String key) {
-        if (key == null) {
-            return null;
-        }
-        return key.getBytes(StandardCharsets.UTF_8);
+        redis.execute(connection -> connection.del(Redis.serialize(key)));
     }
 }

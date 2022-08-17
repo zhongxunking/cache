@@ -16,6 +16,7 @@ import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor;
 import org.antframework.cache.common.DefaultKeyConverter;
 import org.antframework.cache.common.DefaultKeyGenerator;
+import org.antframework.cache.common.redis.springdataredis.Redis;
 import org.antframework.cache.core.TransactionalCacheManager;
 import org.antframework.cache.core.defense.DefensibleTransactionalCacheManager;
 import org.antframework.cache.core.onoff.OnoffTransactionalCacheManager;
@@ -289,7 +290,7 @@ public class CacheAutoConfiguration {
                                     properties.getLocal().getPublisher().getMaxBatchSize(),
                                     properties.getLocal().getPublisher().getPublishThreads(),
                                     computeChannel(properties, environment),
-                                    connectionFactory,
+                                    new Redis(connectionFactory),
                                     serializerManager.get(SERIALIZER_NAME));
                         }
 
@@ -334,7 +335,7 @@ public class CacheAutoConfiguration {
             @Bean(name = "org.antframework.cache.storage.redis.springdataredis.SpringDataRedisExecutor")
             @ConditionalOnMissingBean(RedisExecutor.class)
             public SpringDataRedisExecutor redisExecutor(RedisConnectionFactory connectionFactory) {
-                return new SpringDataRedisExecutor(connectionFactory);
+                return new SpringDataRedisExecutor(new Redis(connectionFactory));
             }
         }
 
