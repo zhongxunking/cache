@@ -26,11 +26,12 @@ public interface RedisExecutor {
     /**
      * hash设置字段值
      *
-     * @param key   key
-     * @param field 字段名
-     * @param value 字段值
+     * @param key      key
+     * @param field    字段名
+     * @param value    字段值
+     * @param liveTime 存活时长（单位：毫秒，null表示不过期）
      */
-    void hPut(String key, String field, byte[] value);
+    void hPut(String key, String field, byte[] value, Long liveTime);
 
     /**
      * hash删除字段
@@ -39,14 +40,6 @@ public interface RedisExecutor {
      * @param field 删除的字段名
      */
     void hDel(String key, String field);
-
-    /**
-     * 设置存活时长
-     *
-     * @param key      key
-     * @param liveTime 存活时长（单位：毫秒）
-     */
-    void expire(String key, long liveTime);
 
     /**
      * 执行脚本

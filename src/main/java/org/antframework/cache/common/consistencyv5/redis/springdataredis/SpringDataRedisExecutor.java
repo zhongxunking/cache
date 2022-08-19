@@ -34,18 +34,19 @@ public class SpringDataRedisExecutor implements RedisExecutor {
     }
 
     @Override
-    public void hPut(String key, String field, byte[] value) {
-        redis.execute(connection -> connection.hSet(Redis.serialize(key), Redis.serialize(field), value));
+    public void hPut(String key, String field, byte[] value, Long liveTime) {
+        redis.execute(connection -> {
+            connection.hSet(Redis.serialize(key), Redis.serialize(field), value);
+            if (liveTime != null) {
+                connection.pExpire(Redis.serialize(key), liveTime);
+            }
+            return null;
+        });
     }
 
     @Override
     public void hDel(String key, String field) {
         redis.execute(connection -> connection.hDel(Redis.serialize(key), Redis.serialize(field)));
-    }
-
-    @Override
-    public void expire(String key, long liveTime) {
-        redis.execute(connection -> connection.pExpire(Redis.serialize(key), liveTime));
     }
 
     @Override

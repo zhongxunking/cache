@@ -74,10 +74,7 @@ public class ConsistencyV5Storage implements Storage {
             writeScopeAware.addPuttedValue(key, new PuttedValue(value, liveTime));
         } else {
             String redisKey = keyGenerator.apply(name, key);
-            redisExecutor.hPut(redisKey, VALUE_FIELD, value);
-            if (liveTime != null) {
-                redisExecutor.expire(redisKey, liveTime);
-            }
+            redisExecutor.hPut(redisKey, VALUE_FIELD, value, liveTime);
         }
     }
 
