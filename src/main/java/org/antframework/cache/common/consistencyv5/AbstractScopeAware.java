@@ -8,9 +8,6 @@
  */
 package org.antframework.cache.common.consistencyv5;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 抽象的缓存一致性方案5作用域感知器
  *
@@ -86,17 +83,5 @@ public abstract class AbstractScopeAware<T> {
      */
     protected T getContext() {
         return contextHolder.get();
-    }
-
-    /**
-     * 被设置键值对的值
-     */
-    @AllArgsConstructor
-    @Getter
-    public static class PuttedValue {
-        // 值
-        private final byte[] value;
-        // 存活时长（单位：毫秒，null表示不过期）
-        private final Long liveTime;
     }
 }

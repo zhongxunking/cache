@@ -9,7 +9,7 @@
 package org.antframework.cache.storage.consistencyv5;
 
 import lombok.AllArgsConstructor;
-import org.antframework.cache.common.consistencyv5.AbstractScopeAware;
+import org.antframework.cache.common.consistencyv5.PuttedValue;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
 import org.antframework.cache.common.consistencyv5.WriteScopeAware;
 import org.antframework.cache.common.consistencyv5.redis.RedisExecutor;
@@ -24,7 +24,7 @@ import java.util.function.BinaryOperator;
  */
 @AllArgsConstructor
 public class ConsistencyV5Storage implements Storage {
-    // 值在hash结构重的字段名
+    // 值在hash结构中的字段名
     private static final String VALUE_FIELD = "value";
 
     // 名称
@@ -69,9 +69,9 @@ public class ConsistencyV5Storage implements Storage {
     @Override
     public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         if (readScopeAware.isActive()) {
-            readScopeAware.setPuttedValue(new AbstractScopeAware.PuttedValue(value, liveTime));
+            readScopeAware.setPuttedValue(new PuttedValue(value, liveTime));
         } else if (writeScopeAware.isActive()) {
-            writeScopeAware.addPuttedValue(key, new AbstractScopeAware.PuttedValue(value, liveTime));
+            writeScopeAware.addPuttedValue(key, new PuttedValue(value, liveTime));
         } else {
             String redisKey = keyGenerator.apply(name, key);
             redisExecutor.hPut(redisKey, VALUE_FIELD, value);
