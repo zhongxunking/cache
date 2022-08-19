@@ -44,8 +44,8 @@ public class SpringDataRedisExecutor implements RedisExecutor {
     }
 
     @Override
-    public void expire(String key, long livaTime) {
-        redis.execute(connection -> connection.pExpire(Redis.serialize(key), livaTime));
+    public void expire(String key, long liveTime) {
+        redis.execute(connection -> connection.pExpire(Redis.serialize(key), liveTime));
     }
 
     @Override
