@@ -34,12 +34,11 @@ public interface RedisExecutor {
     void hPut(String key, String field, byte[] value, Long liveTime);
 
     /**
-     * hash删除字段
+     * 删除键值对
      *
-     * @param key   key
-     * @param field 删除的字段名
+     * @param key 键
      */
-    void hDel(String key, String field);
+    void remove(String key);
 
     /**
      * 执行脚本

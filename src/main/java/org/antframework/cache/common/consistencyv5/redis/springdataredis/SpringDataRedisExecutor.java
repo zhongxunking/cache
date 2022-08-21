@@ -45,8 +45,8 @@ public class SpringDataRedisExecutor implements RedisExecutor {
     }
 
     @Override
-    public void hDel(String key, String field) {
-        redis.execute(connection -> connection.hDel(Redis.serialize(key), Redis.serialize(field)));
+    public void remove(String key) {
+        redis.execute(connection -> connection.del(Redis.serialize(key)));
     }
 
     @Override

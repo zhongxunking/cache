@@ -82,7 +82,7 @@ public class ConsistencyV5Storage implements Storage {
     public void remove(String key) {
         if (!writeScopeAware.isActive()) {
             String redisKey = keyGenerator.apply(name, key);
-            redisExecutor.hDel(redisKey, VALUE_FIELD);
+            redisExecutor.remove(redisKey);
         }
     }
 }
