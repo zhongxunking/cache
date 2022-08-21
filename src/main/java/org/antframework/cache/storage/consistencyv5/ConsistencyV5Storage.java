@@ -69,10 +69,13 @@ public class ConsistencyV5Storage implements Storage {
     public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         if (readScopeAware.isActive()) {
             readScopeAware.setPuttedValue(new PuttedValue(value, liveTime));
-        } else if (writeScopeAware.isActive()) {
-            writeScopeAware.addPuttedValue(key, new PuttedValue(value, liveTime));
         } else {
-            redisExecutor.hPut(keyGenerator.apply(name, key), VALUE_FIELD, value, liveTime);
+            String redisKey = keyGenerator.apply(name, key);
+            if (writeScopeAware.isActive()) {
+                writeScopeAware.addPuttedValue(redisKey, new PuttedValue(value, liveTime));
+            } else {
+                redisExecutor.hPut(redisKey, VALUE_FIELD, value, liveTime);
+            }
         }
     }
 
