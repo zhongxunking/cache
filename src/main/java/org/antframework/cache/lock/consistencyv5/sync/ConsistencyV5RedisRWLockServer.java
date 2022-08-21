@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.common.consistencyv5.PuttedValue;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
 import org.antframework.cache.common.consistencyv5.WriteScopeAware;
+import org.antframework.cache.common.consistencyv5.redis.RedisExecutor;
 import org.antframework.sync.common.SyncUtils;
-import org.antframework.sync.extension.redis.extension.RedisExecutor;
 import org.antframework.sync.extension.redis.support.SyncMaintainer;
 
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
- * 基于redis的读写锁服务端
+ * 缓存一致性方案5的基于redis的读写锁服务端
  */
 @AllArgsConstructor
 @Slf4j
@@ -52,9 +52,9 @@ public class ConsistencyV5RedisRWLockServer {
     private final long liveTime;
     // 维护执行器
     private final Executor maintainExecutor;
-
+    // 读作用域感知器
     private final ReadScopeAware readScopeAware;
-
+    // 写作用域感知器
     private final WriteScopeAware writeScopeAware;
 
     /**
