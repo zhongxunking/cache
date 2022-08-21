@@ -11,7 +11,7 @@ package org.antframework.cache.common.consistencyv5;
 import java.util.concurrent.locks.Lock;
 
 /**
- * 缓存一致性方案5读作用域感知器
+ * 缓存一致性方案5的读作用域感知器
  */
 public class ReadScopeAware extends AbstractScopeAware<ReadScopeAware.Context> {
     @Override

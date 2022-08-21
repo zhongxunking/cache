@@ -9,7 +9,7 @@
 package org.antframework.cache.common.consistencyv5;
 
 /**
- * 抽象的缓存一致性方案5作用域感知器
+ * 缓存一致性方案5的抽象的作用域感知器
  *
  * @param <T> 上下文类型
  */

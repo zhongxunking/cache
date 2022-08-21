@@ -1,4 +1,3 @@
-
 /*
  * 作者：钟勋 (email:zhongxunking@163.com)
  */
@@ -13,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 缓存一致性方案5写作用域感知器
+ * 缓存一致性方案5的写作用域感知器
  */
 public class WriteScopeAware extends AbstractScopeAware<WriteScopeAware.Context> {
     @Override

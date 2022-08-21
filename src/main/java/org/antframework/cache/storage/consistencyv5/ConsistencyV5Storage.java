@@ -20,7 +20,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BinaryOperator;
 
 /**
- * 缓存一致性方案5仓库
+ * 缓存一致性方案5的仓库
  */
 @AllArgsConstructor
 public class ConsistencyV5Storage implements Storage {

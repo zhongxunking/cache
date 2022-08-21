@@ -11,7 +11,7 @@ package org.antframework.cache.common.consistencyv5.redis;
 import java.util.List;
 
 /**
- * Redis执行器
+ * 缓存一致性方案5的Redis执行器
  */
 public interface RedisExecutor {
     /**

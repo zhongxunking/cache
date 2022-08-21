@@ -15,7 +15,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import java.util.List;
 
 /**
- * 基于spring-data-redis的Redis执行器
+ * 缓存一致性方案5的基于spring-data-redis的Redis执行器
  */
 public class SpringDataRedisExecutor implements RedisExecutor {
     // Redis
