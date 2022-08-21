@@ -48,9 +48,8 @@ public class ConsistencyV5Storage implements Storage {
     @Override
     public byte[] get(String key) {
         byte[] value;
-        String redisKey = keyGenerator.apply(name, key);
         if (readScopeAware.isActive()) {
-            Lock readLock = locker.getRWLock(redisKey).readLock();
+            Lock readLock = locker.getRWLock(key).readLock();
             if (readLock.tryLock()) {
                 readScopeAware.lockSuccess(readLock);
                 value = null;
@@ -61,7 +60,7 @@ public class ConsistencyV5Storage implements Storage {
                 value = null;
             }
         } else {
-            value = redisExecutor.hGet(redisKey, VALUE_FIELD);
+            value = redisExecutor.hGet(keyGenerator.apply(name, key), VALUE_FIELD);
         }
         return value;
     }
@@ -73,16 +72,14 @@ public class ConsistencyV5Storage implements Storage {
         } else if (writeScopeAware.isActive()) {
             writeScopeAware.addPuttedValue(key, new PuttedValue(value, liveTime));
         } else {
-            String redisKey = keyGenerator.apply(name, key);
-            redisExecutor.hPut(redisKey, VALUE_FIELD, value, liveTime);
+            redisExecutor.hPut(keyGenerator.apply(name, key), VALUE_FIELD, value, liveTime);
         }
     }
 
     @Override
     public void remove(String key) {
         if (!writeScopeAware.isActive()) {
-            String redisKey = keyGenerator.apply(name, key);
-            redisExecutor.remove(redisKey);
+            redisExecutor.remove(keyGenerator.apply(name, key));
         }
     }
 }
