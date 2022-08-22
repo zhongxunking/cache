@@ -13,7 +13,7 @@ import org.antframework.cache.common.consistencyv5.PuttedValue;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
 import org.antframework.cache.common.consistencyv5.WriteScopeAware;
 import org.antframework.cache.common.consistencyv5.redis.RedisExecutor;
-import org.antframework.cache.lock.Locker;
+import org.antframework.cache.lock.consistencyv5.ConsistencyV5Locker;
 import org.antframework.cache.storage.Storage;
 
 import java.util.concurrent.locks.Lock;
@@ -36,7 +36,7 @@ public class ConsistencyV5Storage implements Storage {
     // 写作用域感知器
     private final WriteScopeAware writeScopeAware;
     // 加锁器
-    private final Locker locker;
+    private final ConsistencyV5Locker locker;
     // Redis执行器
     private final RedisExecutor redisExecutor;
 
