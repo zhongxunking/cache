@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 缓存一致性方案5缓存装饰器
+ * 缓存一致性方案5的缓存装饰器
  */
 @AllArgsConstructor
 public class ConsistencyV5TransactionalCacheDecorator implements TransactionalCache {
