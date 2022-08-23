@@ -89,6 +89,12 @@ public class CacheProperties {
     @Valid
     private Statistic statistic = new Statistic();
     /**
+     * 选填：缓存一致性方案5相关配置
+     */
+    @NotNull
+    @Valid
+    private ConsistencyV5 consistencyV5 = new ConsistencyV5();
+    /**
      * 选填：BeanPostProcessor相关配置
      */
     @NotNull
@@ -263,6 +269,47 @@ public class CacheProperties {
          */
         @NotNull
         private Map<String, T> caches;
+    }
+
+    /**
+     * 缓存一致性方案5相关配置
+     */
+    @Getter
+    @Setter
+    public static class ConsistencyV5 {
+        /**
+         * 是否启用缓存一致性方案5的key
+         */
+        public static final String ENABLE_KEY = "ant.cache.consistency-v5.enable";
+
+        /**
+         * 选填：是否启用缓存一致性方案5（true为启用，false为不启用；默认启用）
+         */
+        private boolean enable = true;
+        /**
+         * 选填：加锁器相关配置
+         */
+        @NotNull
+        @Valid
+        private Locker locker = new Locker();
+
+        /**
+         * 加锁器相关配置
+         */
+        @Getter
+        @Setter
+        public static class Locker {
+            /**
+             * 选填：加锁器等待同步消息的最长时间（毫秒，默认为10秒）
+             */
+            @Min(0)
+            private long maxWaitTime = 10 * 1000;
+            /**
+             * 选填：发生异常时redis中加锁器数据的存活时长（毫秒，默认为10分钟）
+             */
+            @Min(1)
+            private long liveTime = 10 * 60 * 1000;
+        }
     }
 
     /**
