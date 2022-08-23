@@ -289,8 +289,9 @@ public class ConsistencyV5CacheManagerConfiguration {
         return new SpringDataRedisExecutor(connectionFactory);
     }
 
-    // 修改发布器配置导入器
+    // 导入修改发布器配置
     @Configuration
+    @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(ChangePublisher.class)
     @Import(ChangePublisherConfiguration.class)
     public static class ChangePublisherConfigurationImporter {
