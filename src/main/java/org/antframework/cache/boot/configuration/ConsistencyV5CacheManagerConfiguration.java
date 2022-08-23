@@ -35,8 +35,10 @@ import org.antframework.cache.storage.localremote.LocalRemoteStorageManager;
 import org.antframework.cache.storage.statistic.StatisticalStorageManagerDecorator;
 import org.antframework.sync.SyncContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
@@ -49,34 +51,18 @@ import java.util.TimerTask;
 @Configuration
 @Slf4j
 public class ConsistencyV5CacheManagerConfiguration {
+    // 读作用域感知器
+    private final ReadScopeAware readScopeAware = new ReadScopeAware();
+    // 写作用域感知器
+    private final WriteScopeAware writeScopeAware = new WriteScopeAware();
+
     // 缓存管理器
     @Bean(name = "org.antframework.cache.core.TransactionalCacheManager")
-    public OnoffTransactionalCacheManager transactionalCacheManager(SerializerManager serializerManager,
-                                                                    RedisExecutor redisExecutor,
-                                                                    ChangePublisher publisher,
-                                                                    CounterManager counterManager,
-                                                                    CacheProperties properties,
-                                                                    Environment environment) {
-        ReadScopeAware readScopeAware = new ReadScopeAware();
-        WriteScopeAware writeScopeAware = new WriteScopeAware();
-        // 构建加锁器管理器
-        ConsistencyV5LockerManager lockerManager = buildLockerManager(
-                readScopeAware,
-                writeScopeAware,
-                redisExecutor,
-                properties,
-                environment);
-        // 构建仓库管理器
-        StorageManager storageManager = buildStorageManager(
-                readScopeAware,
-                writeScopeAware,
-                lockerManager,
-                redisExecutor,
-                publisher,
-                counterManager,
-                properties,
-                environment);
-        // 构建缓存管理器
+    public OnoffTransactionalCacheManager cacheManager(SerializerManager serializerManager,
+                                                       ConsistencyV5LockerManager lockerManager,
+                                                       StorageManager storageManager,
+                                                       CounterManager counterManager,
+                                                       CacheProperties properties) {
         TransactionalCacheManager cacheManager = new DefensibleTransactionalCacheManager(
                 ConfigurationUtils.toSupplier(properties.getAllowNull()),
                 new DefaultKeyConverter(),
@@ -94,12 +80,18 @@ public class ConsistencyV5CacheManagerConfiguration {
         return new OnoffTransactionalCacheManager(properties::isCacheSwitch, cacheManager);
     }
 
-    // 构建加锁器管理器
-    private ConsistencyV5LockerManager buildLockerManager(ReadScopeAware readScopeAware,
-                                                          WriteScopeAware writeScopeAware,
-                                                          RedisExecutor redisExecutor,
-                                                          CacheProperties properties,
-                                                          Environment environment) {
+    // Hessian序列化器管理器
+    @Bean(name = "org.antframework.cache.serialize.SerializerManager")
+    @ConditionalOnMissingBean(SerializerManager.class)
+    public HessianSerializerManager serializerManager() {
+        return new HessianSerializerManager();
+    }
+
+    // 加锁器管理器
+    @Bean(name = "org.antframework.cache.lock.LockerManager")
+    public ConsistencyV5LockerManager lockerManager(RedisExecutor redisExecutor,
+                                                    CacheProperties properties,
+                                                    Environment environment) {
         ConsistencyV5RedisServer server = new ConsistencyV5RedisServer(
                 redisExecutor,
                 properties.getConsistencyV5().getLocker().getLiveTime(),
@@ -110,39 +102,72 @@ public class ConsistencyV5CacheManagerConfiguration {
         return new ConsistencyV5LockerManager(ConfigurationUtils.buildKeyGenerator(properties, environment), syncContext);
     }
 
-    // 构建仓库管理器
-    private StorageManager buildStorageManager(
-            ReadScopeAware readScopeAware,
-            WriteScopeAware writeScopeAware,
-            ConsistencyV5LockerManager lockerManager,
-            RedisExecutor redisExecutor,
-            ChangePublisher publisher,
-            CounterManager counterManager,
-            CacheProperties properties,
-            Environment environment) {
-        StorageManager storageManager;
-        if (properties.getLocal().isEnable()) {
-            storageManager = LocalRemoteStorageManagers.build(
-                    readScopeAware,
-                    writeScopeAware,
-                    lockerManager,
-                    redisExecutor,
-                    publisher,
-                    counterManager,
-                    properties,
-                    environment);
-        } else {
-            storageManager = StorageManagers.build(
-                    readScopeAware,
-                    writeScopeAware,
-                    lockerManager,
-                    redisExecutor,
-                    counterManager,
-                    properties,
-                    environment);
+    // 仓库管理器
+    @Bean(name = "org.antframework.cache.storage.StorageManager")
+    @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "false")
+    public StorageManager storageManager(ConsistencyV5LockerManager lockerManager,
+                                         RedisExecutor redisExecutor,
+                                         CounterManager counterManager,
+                                         CacheProperties properties,
+                                         Environment environment) {
+        return StorageManagers.build(
+                readScopeAware,
+                writeScopeAware,
+                lockerManager,
+                redisExecutor,
+                counterManager,
+                properties,
+                environment);
+    }
 
+    /**
+     * 仓库管理器工具
+     */
+    public static class StorageManagers {
+        /**
+         * 仓库有次序的名称
+         */
+        public static final String ORDERED_NAME = "0-Remote-Redis";
+
+        // 构建仓库管理器
+        static StorageManager build(ReadScopeAware readScopeAware,
+                                    WriteScopeAware writeScopeAware,
+                                    ConsistencyV5LockerManager lockerManager,
+                                    RedisExecutor redisExecutor,
+                                    CounterManager counterManager,
+                                    CacheProperties properties,
+                                    Environment environment) {
+            StorageManager remote = new ConsistencyV5StorageManager(
+                    ConfigurationUtils.buildKeyGenerator(properties, environment),
+                    readScopeAware,
+                    writeScopeAware,
+                    lockerManager,
+                    redisExecutor);
+            if (properties.getStatistic().isEnable()) {
+                remote = new StatisticalStorageManagerDecorator(remote, ORDERED_NAME, counterManager);
+            }
+            return remote;
         }
-        return storageManager;
+    }
+
+    // 本地和远程复合型仓库管理器
+    @Bean(name = "org.antframework.cache.storage.StorageManager")
+    @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "true", matchIfMissing = true)
+    public LocalRemoteStorageManager localRemoteStorageManager(ConsistencyV5LockerManager lockerManager,
+                                                               RedisExecutor redisExecutor,
+                                                               ChangePublisher publisher,
+                                                               CounterManager counterManager,
+                                                               CacheProperties properties,
+                                                               Environment environment) {
+        return LocalRemoteStorageManagers.build(
+                readScopeAware,
+                writeScopeAware,
+                lockerManager,
+                redisExecutor,
+                publisher,
+                counterManager,
+                properties,
+                environment);
     }
 
     /**
@@ -163,14 +188,14 @@ public class ConsistencyV5CacheManagerConfiguration {
         public static final String LOCAL_REFRESHER_NAME = "ant.cache.local.refresher";
 
         // 构建仓库管理器
-        static StorageManager build(ReadScopeAware readScopeAware,
-                                    WriteScopeAware writeScopeAware,
-                                    ConsistencyV5LockerManager lockerManager,
-                                    RedisExecutor redisExecutor,
-                                    ChangePublisher publisher,
-                                    CounterManager counterManager,
-                                    CacheProperties properties,
-                                    Environment environment) {
+        static LocalRemoteStorageManager build(ReadScopeAware readScopeAware,
+                                               WriteScopeAware writeScopeAware,
+                                               ConsistencyV5LockerManager lockerManager,
+                                               RedisExecutor redisExecutor,
+                                               ChangePublisher publisher,
+                                               CounterManager counterManager,
+                                               CacheProperties properties,
+                                               Environment environment) {
             StorageManager local = buildLocal(counterManager, properties);
             StorageManager remote = buildRemote(
                     readScopeAware,
@@ -250,41 +275,11 @@ public class ConsistencyV5CacheManagerConfiguration {
         }
     }
 
-    /**
-     * 仓库管理器工具
-     */
-    public static class StorageManagers {
-        /**
-         * 仓库有次序的名称
-         */
-        public static final String ORDERED_NAME = "0-Remote-Redis";
-
-        // 构建仓库管理器
-        static StorageManager build(ReadScopeAware readScopeAware,
-                                    WriteScopeAware writeScopeAware,
-                                    ConsistencyV5LockerManager lockerManager,
-                                    RedisExecutor redisExecutor,
-                                    CounterManager counterManager,
-                                    CacheProperties properties,
-                                    Environment environment) {
-            StorageManager remote = new ConsistencyV5StorageManager(
-                    ConfigurationUtils.buildKeyGenerator(properties, environment),
-                    readScopeAware,
-                    writeScopeAware,
-                    lockerManager,
-                    redisExecutor);
-            if (properties.getStatistic().isEnable()) {
-                remote = new StatisticalStorageManagerDecorator(remote, ORDERED_NAME, counterManager);
-            }
-            return remote;
-        }
-    }
-
-    // Hessian序列化器管理器
-    @Bean(name = "org.antframework.cache.serialize.SerializerManager")
-    @ConditionalOnMissingBean(SerializerManager.class)
-    public HessianSerializerManager serializerManager() {
-        return new HessianSerializerManager();
+    // 环路计数器管理器
+    @Bean(name = "org.antframework.cache.statistic.CounterManager")
+    @ConditionalOnMissingBean(CounterManager.class)
+    public RingCounterManager counterManager(CacheProperties properties) {
+        return new RingCounterManager(properties.getStatistic().getTimeLength(), properties.getStatistic().getTimeGranularity());
     }
 
     // 基于spring-data-redis的Redis执行器
@@ -294,10 +289,10 @@ public class ConsistencyV5CacheManagerConfiguration {
         return new SpringDataRedisExecutor(connectionFactory);
     }
 
-    // 环路计数器管理器
-    @Bean(name = "org.antframework.cache.statistic.CounterManager")
-    @ConditionalOnMissingBean(CounterManager.class)
-    public RingCounterManager counterManager(CacheProperties properties) {
-        return new RingCounterManager(properties.getStatistic().getTimeLength(), properties.getStatistic().getTimeGranularity());
+    // 修改发布器配置导入器
+    @Configuration
+    @ConditionalOnMissingBean(ChangePublisher.class)
+    @Import(ChangePublisherConfiguration.class)
+    public static class ChangePublisherConfigurationImporter {
     }
 }
