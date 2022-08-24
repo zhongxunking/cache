@@ -57,7 +57,7 @@ if (owner == 'writer' or owner == 'reader-writer') then
 end
 -- 发布同步消息
 redis.call('publish', syncChannel, 0);
--- 设置value
+-- 如果加锁成功，则设置value
 if (success == true and value ~= nil) then
     redis.call('hset', lockKey, 'value', value);
     if (owner == 'none' and valueLiveTime ~= nil) then
