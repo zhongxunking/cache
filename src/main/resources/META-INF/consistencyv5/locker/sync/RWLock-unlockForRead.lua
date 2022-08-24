@@ -68,7 +68,10 @@ if (owner == 'none') then
         writerBooking = tonumber(writerBooking);
     end
     if (writerBooking == false or writerBooking < currentTime) then
-        redis.call('del', lockKey);
+        local existingValue = redis.call('hget', lockKey, 'value');
+        if (existingValue == false) then
+            redis.call('del', lockKey);
+        end
     end
 end
 -- 发布同步消息
