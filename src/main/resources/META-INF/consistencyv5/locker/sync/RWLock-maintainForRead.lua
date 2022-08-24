@@ -4,6 +4,7 @@
 
 -- 数据结构（hash）
 -- ${lockKey}:
+--   value: ${value}
 --   owner: none、writer、readers、reader-writer
 --   writerBooking: ${writerBooking}
 --   writer: ${lockerId}
