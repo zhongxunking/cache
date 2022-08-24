@@ -89,4 +89,5 @@ if (success == true and value ~= nil) then
         redis.call('pexpire', lockKey, valueLiveTime);
     end
 end
+
 return success;
