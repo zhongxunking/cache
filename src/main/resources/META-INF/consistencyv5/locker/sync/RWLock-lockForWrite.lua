@@ -1,9 +1,10 @@
 -- KEYS: lockKey
--- ARGV: lockerId, deadline, currentTime, liveTime
+-- ARGV: lockerId, deadline, currentTime, liveTime, removeValue
 -- return: nil（加锁成功）；waitTime（加锁失败，需等待的毫秒时间）
 
 -- 数据结构（hash）
 -- ${lockKey}:
+--   value: ${value}
 --   owner: none、writer、readers、reader-writer
 --   writerBooking: ${writerBooking}
 --   writer: ${lockerId}
@@ -18,6 +19,7 @@ local lockerId = ARGV[1];
 local deadline = tonumber(ARGV[2]);
 local currentTime = tonumber(ARGV[3]);
 local liveTime = tonumber(ARGV[4]);
+local removeValue = ARGV[5] == 'true';
 -- 获取owner
 local owner = redis.call('hget', lockKey, 'owner');
 if (owner == false) then
@@ -114,4 +116,9 @@ if (waitTime == nil) then
         redis.call('pexpire', lockKey, ttl);
     end
 end
+-- 如果加锁成功，判断是否删除value
+if (waitTime == nil and removeValue == true) then
+    redis.call('hdel', lockKey, 'value');
+end
+
 return waitTime;
