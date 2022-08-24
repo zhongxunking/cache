@@ -32,15 +32,15 @@ public class ConsistencyV5RedisRWLockServer {
     // 加读锁脚本
     private static final String LOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForRead.lua");
     // 解读锁脚本
-    private static final String UNLOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-unlockForRead.lua");
+    private static final String UNLOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForRead.lua");
     // 维护读锁脚本
-    private static final String MAINTAIN_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-maintainForRead.lua");
+    private static final String MAINTAIN_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForRead.lua");
     // 加写锁脚本
-    private static final String LOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-lockForWrite.lua");
+    private static final String LOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForWrite.lua");
     // 解写锁脚本
-    private static final String UNLOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-unlockForWrite.lua");
+    private static final String UNLOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForWrite.lua");
     // 维护写锁脚本
-    private static final String MAINTAIN_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-maintainForWrite.lua");
+    private static final String MAINTAIN_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForWrite.lua");
 
     // 读锁维护器
     private final SyncMaintainer readLockMaintainer = new SyncMaintainer();
