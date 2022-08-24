@@ -1,9 +1,10 @@
 -- KEYS: lockKey
--- ARGV: lockerId, currentTime, syncChannel
+-- ARGV: lockerId, currentTime, syncChannel, value, valueLiveTime
 -- return: true（成功）；false（失败，锁不存在或已经易主）
 
 -- 数据结构（hash）
 -- ${lockKey}:
+--   value: ${value}
 --   owner: none、writer、readers、reader-writer
 --   writerBooking: ${writerBooking}
 --   writer: ${lockerId}
@@ -17,6 +18,11 @@ local lockKey = KEYS[1];
 local lockerId = ARGV[1];
 local currentTime = tonumber(ARGV[2]);
 local syncChannel = ARGV[3];
+local value = ARGV[4];
+local valueLiveTime = ARGV[5];
+if (valueLiveTime ~= nil) then
+    valueLiveTime = tonumber(valueLiveTime);
+end
 -- 获取owner
 local owner = redis.call('hget', lockKey, 'owner');
 if (owner == false) then
@@ -68,5 +74,12 @@ end
 -- 发布同步消息
 if (readerAmount <= 1) then
     redis.call('publish', syncChannel, 0);
+end
+-- 设置value
+if (success == true and value ~= nil) then
+    redis.call('hset', lockKey, 'value', value);
+    if (owner == 'none' and valueLiveTime ~= nil) then
+        redis.call('pexpire', lockKey, valueLiveTime);
+    end
 end
 return success;
