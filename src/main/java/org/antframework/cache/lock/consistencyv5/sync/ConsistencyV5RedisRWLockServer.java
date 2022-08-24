@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
 @Slf4j
 public class ConsistencyV5RedisRWLockServer {
     // 加读锁脚本
-    private static final String LOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-lockForRead.lua");
+    private static final String LOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForRead.lua");
     // 解读锁脚本
     private static final String UNLOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/server/redis/rw-lock/RWLock-unlockForRead.lua");
     // 维护读锁脚本
@@ -71,19 +71,22 @@ public class ConsistencyV5RedisRWLockServer {
 
         String redisKey = computeRedisKey(key);
         long currentTime = System.currentTimeMillis();
-        List<?> waitTimeGotValue = redisExecutor.eval(
+        List<?> result = redisExecutor.eval(
                 LOCK_FOR_READ_SCRIPT,
                 Collections.singletonList(redisKey),
                 Arrays.asList(lockerId, currentTime, liveTime),
                 List.class);
-        Long waitTime = (Long) waitTimeGotValue.get(0);
-        byte[] gotValue = (byte[]) waitTimeGotValue.get(1);
 
-        if (waitTime == null) {
+        Long waitTime = (Long) result.get(0);
+        if (waitTime < 0) {
+            waitTime = null;
             readLockMaintainer.add(key, lockerId);
-        }
-        if (readScopeAware.isActive() && gotValue != null) {
-            readScopeAware.setGotValue(gotValue);
+        } else if (result.size() > 1) {
+            waitTime = liveTime;
+            byte[] gotValue = (byte[]) result.get(1);
+            if (readScopeAware.isActive() && gotValue != null) {
+                readScopeAware.setGotValue(gotValue);
+            }
         }
 
         return waitTime;

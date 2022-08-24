@@ -1,9 +1,12 @@
 -- KEYS: lockKey
 -- ARGV: lockerId, currentTime, liveTime
--- return: nil（加锁成功）；waitTime（加锁失败，需等待的毫秒时间）
+-- return: {0, value}（获取value成功，未尝试加锁）
+--         {-1}（获取value失败，加锁成功）
+--         {waitTime}（获取value失败，加锁失败(waitTime为需等待的毫秒时间)）
 
 -- 数据结构（hash）
 -- ${lockKey}:
+--   value: ${value}
 --   owner: none、writer、readers、reader-writer
 --   writerBooking: ${writerBooking}
 --   writer: ${lockerId}
@@ -17,6 +20,13 @@ local lockKey = KEYS[1];
 local lockerId = ARGV[1];
 local currentTime = tonumber(ARGV[2]);
 local liveTime = tonumber(ARGV[3]);
+-- 尝试获取value
+local gotValue = redis.call('hget', lockKey, 'value');
+if (gotValue ~= false) then
+    -- 获取value成功
+    return { 0, gotValue };
+end
+-- 获取value失败，开始尝试加锁
 -- 获取owner
 local owner = redis.call('hget', lockKey, 'owner');
 if (owner == false) then
@@ -133,4 +143,13 @@ if (waitTime == nil) then
         redis.call('pexpire', lockKey, ttl);
     end
 end
-return waitTime;
+
+-- 构造加锁结果
+if (waitTime == nil) then
+    return { -1 };
+else
+    if waitTime < 0 then
+        waitTime = 0;
+    end
+    return { waitTime };
+end
