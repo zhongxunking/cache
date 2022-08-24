@@ -68,6 +68,10 @@ if (owner == 'none') then
         writerBooking = tonumber(writerBooking);
     end
     if (writerBooking == false or writerBooking < currentTime) then
+        -- 删除writerBooking
+        writerBooking = false;
+        redis.call('hdel', lockKey, 'writerBooking');
+        -- 如无value，则删除key
         local existingValue = redis.call('hget', lockKey, 'value');
         if (existingValue == false) then
             redis.call('del', lockKey);
