@@ -24,7 +24,12 @@ if (owner == 'writer' or owner == 'reader-writer') then
     local writer = redis.call('hget', lockKey, 'writer');
     if (lockerId == writer) then
         -- 维护锁
-        redis.call('pexpire', lockKey, liveTime);
+        local ttl = tonumber(redis.call('pttl', lockKey));
+        if (ttl ~= -1 and ttl < liveTime) then
+            ttl = liveTime
+            redis.call('pexpire', lockKey, ttl);
+        end
+
         alive = true;
     end
 end

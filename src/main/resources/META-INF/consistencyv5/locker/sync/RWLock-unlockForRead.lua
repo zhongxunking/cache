@@ -82,11 +82,19 @@ end
 if (readerAmount <= 1) then
     redis.call('publish', syncChannel, 0);
 end
--- 如果解锁成功，则设置value
+-- 如果解锁成功，则设置value和存活时长
 if (success == true and value ~= nil) then
     redis.call('hset', lockKey, 'value', value);
-    if (owner == 'none' and valueLiveTime ~= nil) then
-        redis.call('pexpire', lockKey, valueLiveTime);
+    if (valueLiveTime ~= nil) then
+        if (owner == 'none') then
+            redis.call('pexpire', lockKey, valueLiveTime);
+        else
+            local ttl = tonumber(redis.call('pttl', lockKey));
+            if (ttl ~= -1 and ttl < valueLiveTime) then
+                ttl = valueLiveTime;
+                redis.call('pexpire', lockKey, ttl);
+            end
+        end
     end
 end
 

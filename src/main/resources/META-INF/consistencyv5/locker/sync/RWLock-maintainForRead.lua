@@ -30,7 +30,11 @@ if (owner == 'readers' or owner == 'reader-writer') then
         readerDeadline = currentTime + liveTime;
         redis.call('hset', lockKey, readerKey, readerDeadline);
         -- 维护锁
-        redis.call('pexpire', lockKey, liveTime);
+        local ttl = tonumber(redis.call('pttl', lockKey));
+        if (ttl ~= -1 and ttl < liveTime) then
+            ttl = liveTime
+            redis.call('pexpire', lockKey, ttl);
+        end
 
         alive = true;
     end
