@@ -20,7 +20,7 @@ import org.antframework.cache.core.statistic.StatisticalTransactionalCacheManage
 import org.antframework.cache.lock.LockerManager;
 import org.antframework.cache.lock.sync.SyncLockerManager;
 import org.antframework.cache.serialize.SerializerManager;
-import org.antframework.cache.serialize.jackson.JacksonSerializerManager;
+import org.antframework.cache.serialize.hessian.HessianSerializerManager;
 import org.antframework.cache.statistic.CounterManager;
 import org.antframework.cache.statistic.ring.RingCounterManager;
 import org.antframework.cache.storage.StorageManager;
@@ -71,11 +71,11 @@ public class CacheManagerConfiguration {
         return new OnoffTransactionalCacheManager(properties::isCacheSwitch, cacheManager);
     }
 
-    // Jackson序列化器管理器
+    // Hessian序列化器管理器
     @Bean(name = "org.antframework.cache.serialize.SerializerManager")
     @ConditionalOnMissingBean(SerializerManager.class)
-    public JacksonSerializerManager serializerManager() {
-        return new JacksonSerializerManager();
+    public HessianSerializerManager serializerManager() {
+        return new HessianSerializerManager();
     }
 
     // Sync加锁器管理器
