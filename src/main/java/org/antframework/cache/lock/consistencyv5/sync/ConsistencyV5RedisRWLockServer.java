@@ -17,10 +17,7 @@ import org.antframework.cache.common.consistencyv5.redis.RedisExecutor;
 import org.antframework.sync.common.SyncUtils;
 import org.antframework.sync.extension.redis.support.SyncMaintainer;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 /**
@@ -108,12 +105,7 @@ public class ConsistencyV5RedisRWLockServer {
             boolean success = redisExecutor.eval(
                     UNLOCK_FOR_READ_SCRIPT,
                     Collections.singletonList(redisKey),
-                    Arrays.asList(
-                            lockerId,
-                            currentTime,
-                            syncChannel,
-                            puttedValue == null ? null : puttedValue.getValue(),
-                            puttedValue == null ? null : puttedValue.getLiveTime()),
+                    computeArgs(Arrays.asList(lockerId, currentTime, syncChannel), puttedValue),
                     Boolean.class);
             if (!success) {
                 log.error("调用redis解读锁失败（锁不存在或已经易主），可能已经发生并发问题：key={},lockerId={}", key, lockerId);
@@ -166,11 +158,7 @@ public class ConsistencyV5RedisRWLockServer {
             boolean success = redisExecutor.eval(
                     UNLOCK_FOR_WRITE_SCRIPT,
                     Collections.singletonList(redisKey),
-                    Arrays.asList(
-                            lockerId,
-                            syncChannel,
-                            puttedValue == null ? null : puttedValue.getValue(),
-                            puttedValue == null ? null : puttedValue.getLiveTime()),
+                    computeArgs(Arrays.asList(lockerId, syncChannel), puttedValue),
                     Boolean.class);
             if (!success) {
                 log.error("调用redis解写锁失败（锁不存在或已经易主），可能已经发生并发问题：key={},lockerId={}", key, lockerId);
@@ -178,6 +166,21 @@ public class ConsistencyV5RedisRWLockServer {
         } catch (Throwable e) {
             log.error("调用redis解写锁出错：", e);
         }
+    }
+
+    // 计算args
+    private List<Object> computeArgs(List<Object> objs, PuttedValue puttedValue) {
+        List<Object> args = new ArrayList<>(objs.size() + 2);
+        args.addAll(objs);
+        if (puttedValue != null) {
+            if (puttedValue.getValue() != null) {
+                args.add(puttedValue.getValue());
+                if (puttedValue.getLiveTime() != null) {
+                    args.add(puttedValue.getLiveTime());
+                }
+            }
+        }
+        return args;
     }
 
     /**
