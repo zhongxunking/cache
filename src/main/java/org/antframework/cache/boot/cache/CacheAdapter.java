@@ -20,6 +20,8 @@ import java.util.concurrent.Callable;
 public class CacheAdapter implements Cache {
     // 目标
     private final org.antframework.cache.Cache target;
+    // 值类型感知器
+    private final ValueTypeAware valueTypeAware;
 
     @Override
     public String getName() {
@@ -37,7 +39,7 @@ public class CacheAdapter implements Cache {
         if (cachedValue == null) {
             return null;
         }
-        return new ValueWrapperAdapter(cachedValue, Object.class);
+        return new ValueWrapperAdapter(cachedValue, computeValueType());
     }
 
     @Override
@@ -47,7 +49,7 @@ public class CacheAdapter implements Cache {
 
     @Override
     public <T> T get(Object key, Callable<T> valueLoader) {
-        return target.get(key, (Class<T>) Object.class, valueLoader);
+        return target.get(key, (Class<T>) computeValueType(), valueLoader);
     }
 
     @Override
@@ -63,6 +65,15 @@ public class CacheAdapter implements Cache {
     @Override
     public void clear() {
         throw new UnsupportedOperationException("不支持clear操作");
+    }
+
+    // 计算值类型
+    private Class<?> computeValueType() {
+        Class<?> valueType = valueTypeAware.getValueType();
+        if (valueType == null) {
+            valueType = Object.class;
+        }
+        return valueType;
     }
 
     /**

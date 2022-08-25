@@ -12,6 +12,7 @@ import org.antframework.cache.CacheManager;
 import org.antframework.cache.CacheTemplate;
 import org.antframework.cache.boot.annotation.ForceSyncProcessor;
 import org.antframework.cache.boot.cache.CacheManagerAdapter;
+import org.antframework.cache.boot.cache.ValueTypeAware;
 import org.antframework.cache.boot.configuration.CacheManagerConfiguration;
 import org.antframework.cache.boot.configuration.ConsistencyV5CacheManagerConfiguration;
 import org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor;
@@ -34,6 +35,9 @@ import org.springframework.context.annotation.Import;
 @EnableConfigurationProperties(CacheProperties.class)
 @EnableCaching
 public class CacheAutoConfiguration {
+    // 值类型感知器
+    private final ValueTypeAware valueTypeAware = new ValueTypeAware();
+
     // 强制@Cacheable(sync=true)的处理器
     @Bean(name = "org.antframework.cache.boot.annotation.ForceSyncProcessor")
     @ConditionalOnMissingBean(ForceSyncProcessor.class)
@@ -52,7 +56,7 @@ public class CacheAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(org.springframework.cache.CacheManager.class)
     public CacheManagerAdapter cacheManager(CacheManager cacheManager) {
-        return new CacheManagerAdapter(cacheManager);
+        return new CacheManagerAdapter(cacheManager, valueTypeAware);
     }
 
     // 缓存操作模板

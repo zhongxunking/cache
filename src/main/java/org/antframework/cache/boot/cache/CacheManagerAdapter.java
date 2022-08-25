@@ -22,6 +22,8 @@ import java.util.Collection;
 public class CacheManagerAdapter extends AbstractManager<Cache> implements CacheManager {
     // 目标
     private final org.antframework.cache.CacheManager target;
+    // 值类型感知器
+    private final ValueTypeAware valueTypeAware;
 
     @Override
     public Cache getCache(String name) {
@@ -35,6 +37,6 @@ public class CacheManagerAdapter extends AbstractManager<Cache> implements Cache
 
     @Override
     protected Cache create(String name) {
-        return new CacheAdapter(target.getCache(name));
+        return new CacheAdapter(target.getCache(name), valueTypeAware);
     }
 }
