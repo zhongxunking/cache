@@ -24,7 +24,7 @@ import org.antframework.cache.core.statistic.StatisticalTransactionalCacheManage
 import org.antframework.cache.lock.consistencyv5.ConsistencyV5LockerManager;
 import org.antframework.cache.lock.consistencyv5.sync.ConsistencyV5RedisServer;
 import org.antframework.cache.serialize.SerializerManager;
-import org.antframework.cache.serialize.hessian.HessianSerializerManager;
+import org.antframework.cache.serialize.jackson.JacksonSerializerManager;
 import org.antframework.cache.statistic.CounterManager;
 import org.antframework.cache.statistic.ring.RingCounterManager;
 import org.antframework.cache.storage.StorageManager;
@@ -80,11 +80,11 @@ public class ConsistencyV5CacheManagerConfiguration {
         return new OnoffTransactionalCacheManager(properties::isCacheSwitch, cacheManager);
     }
 
-    // Hessian序列化器管理器
+    // Jackson序列化器管理器
     @Bean(name = "org.antframework.cache.serialize.SerializerManager")
     @ConditionalOnMissingBean(SerializerManager.class)
-    public HessianSerializerManager serializerManager() {
-        return new HessianSerializerManager();
+    public JacksonSerializerManager serializerManager() {
+        return new JacksonSerializerManager();
     }
 
     // 加锁器管理器
