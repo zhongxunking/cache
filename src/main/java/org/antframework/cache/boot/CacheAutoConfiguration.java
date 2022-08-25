@@ -10,6 +10,7 @@ package org.antframework.cache.boot;
 
 import org.antframework.cache.CacheManager;
 import org.antframework.cache.CacheTemplate;
+import org.antframework.cache.boot.annotation.AwareValueTypeProcessor;
 import org.antframework.cache.boot.annotation.ForceSyncProcessor;
 import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.cache.ValueTypeAware;
@@ -38,6 +39,13 @@ public class CacheAutoConfiguration {
     // 值类型感知器
     private final ValueTypeAware valueTypeAware = new ValueTypeAware();
 
+    // 使CacheInterceptor具有值类型感知能力的的处理器
+    @Bean(name = "org.antframework.cache.boot.annotation.AwareValueTypeProcessor")
+    @ConditionalOnMissingBean(AwareValueTypeProcessor.class)
+    public AwareValueTypeProcessor awareValueTypeProcessor(CacheProperties properties) {
+        return new AwareValueTypeProcessor(valueTypeAware, properties.getBeanProcessor().getDecorateCacheInterceptorOrder());
+    }
+
     // 强制@Cacheable(sync=true)的处理器
     @Bean(name = "org.antframework.cache.boot.annotation.ForceSyncProcessor")
     @ConditionalOnMissingBean(ForceSyncProcessor.class)
@@ -48,7 +56,7 @@ public class CacheAutoConfiguration {
     // 事务管理器的缓存处理器
     @Bean(name = "org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor")
     @ConditionalOnMissingBean(TransactionManagerCacheProcessor.class)
-    public TransactionManagerCacheProcessor cacheProcessor(CacheProperties properties) {
+    public TransactionManagerCacheProcessor transactionProcessor(CacheProperties properties) {
         return new TransactionManagerCacheProcessor(properties.getBeanProcessor().getDecorateTransactionManagerOrder());
     }
 

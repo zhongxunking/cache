@@ -319,6 +319,10 @@ public class CacheProperties {
     @Setter
     public static class BeanProcessor {
         /**
+         * 默认装饰CacheInterceptor处理器的优先级
+         */
+        public static final int DEFAULT_DECORATE_CACHE_INTERCEPTOR_ORDER = Ordered.LOWEST_PRECEDENCE - 300;
+        /**
          * 默认强制@Cacheable(sync=true)处理器的优先级
          */
         public static final int DEFAULT_FORCE_SYNC_ORDER = Ordered.LOWEST_PRECEDENCE - 200;
@@ -327,6 +331,10 @@ public class CacheProperties {
          */
         public static final int DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER = Ordered.LOWEST_PRECEDENCE - 100;
 
+        /**
+         * 选填：装饰CacheInterceptor处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 300）
+         */
+        private int decorateCacheInterceptorOrder = DEFAULT_DECORATE_CACHE_INTERCEPTOR_ORDER;
         /**
          * 选填：强制@Cacheable(sync=true)处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 200）
          */
