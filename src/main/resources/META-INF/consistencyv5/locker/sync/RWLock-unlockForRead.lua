@@ -82,7 +82,7 @@ end
 if (readerAmount <= 1) then
     redis.call('publish', syncChannel, 0);
 end
--- 如果加锁成功，则设置value
+-- 如果解锁成功，则设置value
 if (success == true and value ~= nil) then
     redis.call('hset', lockKey, 'value', value);
     if (owner == 'none' and valueLiveTime ~= nil) then
