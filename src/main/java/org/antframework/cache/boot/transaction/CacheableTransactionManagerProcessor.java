@@ -18,10 +18,10 @@ import org.springframework.core.Ordered;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * 事务管理器的缓存处理器
+ * 使事务管理器具备缓存管理能力的处理器
  */
 @RequiredArgsConstructor
-public class TransactionManagerCacheProcessor implements BeanPostProcessor, ApplicationContextAware, Ordered {
+public class CacheableTransactionManagerProcessor implements BeanPostProcessor, ApplicationContextAware, Ordered {
     // 优先级
     private final int order;
     // 应用上下文

@@ -16,7 +16,7 @@ import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.cache.ValueTypeAware;
 import org.antframework.cache.boot.configuration.CacheManagerConfiguration;
 import org.antframework.cache.boot.configuration.ConsistencyV5CacheManagerConfiguration;
-import org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor;
+import org.antframework.cache.boot.transaction.CacheableTransactionManagerProcessor;
 import org.antframework.cache.core.TransactionalCacheManager;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -53,11 +53,11 @@ public class CacheAutoConfiguration {
         return new ForceSyncProcessor(properties.getBeanProcessor().getForceSyncOrder());
     }
 
-    // 事务管理器的缓存处理器
-    @Bean(name = "org.antframework.cache.boot.transaction.TransactionManagerCacheProcessor")
-    @ConditionalOnMissingBean(TransactionManagerCacheProcessor.class)
-    public TransactionManagerCacheProcessor transactionProcessor(CacheProperties properties) {
-        return new TransactionManagerCacheProcessor(properties.getBeanProcessor().getDecorateTransactionManagerOrder());
+    // 使事务管理器具备缓存管理能力的处理器
+    @Bean(name = "org.antframework.cache.boot.transaction.CacheableTransactionManagerProcessor")
+    @ConditionalOnMissingBean(CacheableTransactionManagerProcessor.class)
+    public CacheableTransactionManagerProcessor transactionProcessor(CacheProperties properties) {
+        return new CacheableTransactionManagerProcessor(properties.getBeanProcessor().getDecorateTransactionManagerOrder());
     }
 
     // CacheManager适配器
