@@ -8,7 +8,6 @@
  */
 package org.antframework.cache.lock.consistencyv5.sync;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.common.consistencyv5.PuttedValue;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
@@ -23,21 +22,20 @@ import java.util.concurrent.Executor;
 /**
  * 缓存一致性方案5的基于redis的读写锁服务端
  */
-@AllArgsConstructor
 @Slf4j
 public class ConsistencyV5RedisRWLockServer {
-    // 加读锁脚本
-    private static final String LOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForRead.lua");
-    // 解读锁脚本
-    private static final String UNLOCK_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForRead.lua");
-    // 维护读锁脚本
-    private static final String MAINTAIN_FOR_READ_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForRead.lua");
-    // 加写锁脚本
-    private static final String LOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForWrite.lua");
-    // 解写锁脚本
-    private static final String UNLOCK_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForWrite.lua");
-    // 维护写锁脚本
-    private static final String MAINTAIN_FOR_WRITE_SCRIPT = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForWrite.lua");
+    // 源加读锁脚本
+    private static final String LOCK_FOR_READ_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForRead.lua");
+    // 源解读锁脚本
+    private static final String UNLOCK_FOR_READ_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForRead.lua");
+    // 源维护读锁脚本
+    private static final String MAINTAIN_FOR_READ_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForRead.lua");
+    // 源加写锁脚本
+    private static final String LOCK_FOR_WRITE_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-lockForWrite.lua");
+    // 源解写锁脚本
+    private static final String UNLOCK_FOR_WRITE_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-unlockForWrite.lua");
+    // 源维护写锁脚本
+    private static final String MAINTAIN_FOR_WRITE_SCRIPT_SOURCE = SyncUtils.getScript("META-INF/consistencyv5/locker/sync/RWLock-maintainForWrite.lua");
 
     // 读锁维护器
     private final SyncMaintainer readLockMaintainer = new SyncMaintainer();
@@ -54,6 +52,38 @@ public class ConsistencyV5RedisRWLockServer {
     // 写作用域感知器
     private final WriteScopeAware writeScopeAware;
 
+    // 加读锁脚本
+    private final Object lockForReadScript;
+    // 解读锁脚本
+    private final Object unlockForReadScript;
+    // 维护读锁脚本
+    private final Object maintainForReadScript;
+    // 加写锁脚本
+    private final Object lockForWriteScript;
+    // 解写锁脚本
+    private final Object unlockForWriteScript;
+    // 维护写锁脚本
+    private final Object maintainForWriteScript;
+
+    public ConsistencyV5RedisRWLockServer(RedisExecutor redisExecutor,
+                                          long liveTime,
+                                          Executor maintainExecutor,
+                                          ReadScopeAware readScopeAware,
+                                          WriteScopeAware writeScopeAware) {
+        this.redisExecutor = redisExecutor;
+        this.liveTime = liveTime;
+        this.maintainExecutor = maintainExecutor;
+        this.readScopeAware = readScopeAware;
+        this.writeScopeAware = writeScopeAware;
+
+        lockForReadScript = redisExecutor.encodeScript(LOCK_FOR_READ_SCRIPT_SOURCE, List.class);
+        unlockForReadScript = redisExecutor.encodeScript(UNLOCK_FOR_READ_SCRIPT_SOURCE, Boolean.class);
+        maintainForReadScript = redisExecutor.encodeScript(MAINTAIN_FOR_READ_SCRIPT_SOURCE, Boolean.class);
+        lockForWriteScript = redisExecutor.encodeScript(LOCK_FOR_WRITE_SCRIPT_SOURCE, Long.class);
+        unlockForWriteScript = redisExecutor.encodeScript(UNLOCK_FOR_WRITE_SCRIPT_SOURCE, Boolean.class);
+        maintainForWriteScript = redisExecutor.encodeScript(MAINTAIN_FOR_WRITE_SCRIPT_SOURCE, Boolean.class);
+    }
+
     /**
      * 加读锁
      *
@@ -69,10 +99,9 @@ public class ConsistencyV5RedisRWLockServer {
         String redisKey = computeRedisKey(key);
         long currentTime = System.currentTimeMillis();
         List<?> result = redisExecutor.eval(
-                LOCK_FOR_READ_SCRIPT,
+                lockForReadScript,
                 Collections.singletonList(redisKey),
-                Arrays.asList(lockerId, currentTime, liveTime),
-                List.class);
+                Arrays.asList(lockerId, currentTime, liveTime));
 
         Long waitTime = (Long) result.get(0);
         if (waitTime < 0) {
@@ -103,10 +132,9 @@ public class ConsistencyV5RedisRWLockServer {
         PuttedValue puttedValue = readScopeAware.isActive() ? readScopeAware.getPuttedValue() : null;
         try {
             boolean success = redisExecutor.eval(
-                    UNLOCK_FOR_READ_SCRIPT,
+                    unlockForReadScript,
                     Collections.singletonList(redisKey),
-                    computeArgs(Arrays.asList(lockerId, currentTime, syncChannel), puttedValue),
-                    Boolean.class);
+                    computeArgs(Arrays.asList(lockerId, currentTime, syncChannel), puttedValue));
             if (!success) {
                 log.error("调用redis解读锁失败（锁不存在或已经易主），可能已经发生并发问题：key={},lockerId={}", key, lockerId);
             }
@@ -128,15 +156,14 @@ public class ConsistencyV5RedisRWLockServer {
         long currentTime = System.currentTimeMillis();
         boolean removeValue = writeScopeAware.isActive();
         Long waitTime = redisExecutor.eval(
-                LOCK_FOR_WRITE_SCRIPT,
+                lockForWriteScript,
                 Collections.singletonList(redisKey),
                 Arrays.asList(
                         lockerId,
                         deadline,
                         currentTime,
                         liveTime,
-                        removeValue),
-                Long.class);
+                        removeValue));
         if (waitTime == null) {
             writeLockMaintainer.add(key, lockerId);
         }
@@ -156,10 +183,9 @@ public class ConsistencyV5RedisRWLockServer {
         PuttedValue puttedValue = writeScopeAware.isActive() ? writeScopeAware.getPuttedValue(key) : null;
         try {
             boolean success = redisExecutor.eval(
-                    UNLOCK_FOR_WRITE_SCRIPT,
+                    unlockForWriteScript,
                     Collections.singletonList(redisKey),
-                    computeArgs(Arrays.asList(lockerId, syncChannel), puttedValue),
-                    Boolean.class);
+                    computeArgs(Arrays.asList(lockerId, syncChannel), puttedValue));
             if (!success) {
                 log.error("调用redis解写锁失败（锁不存在或已经易主），可能已经发生并发问题：key={},lockerId={}", key, lockerId);
             }
@@ -189,24 +215,23 @@ public class ConsistencyV5RedisRWLockServer {
     public void maintain() {
         Set<String> keys = readLockMaintainer.getKeys();
         for (String key : keys) {
-            maintainExecutor.execute(() -> readLockMaintainer.maintain(key, (k, lockerId) -> doMaintain(k, lockerId, MAINTAIN_FOR_READ_SCRIPT, Arrays.asList(lockerId, System.currentTimeMillis(), liveTime))));
+            maintainExecutor.execute(() -> readLockMaintainer.maintain(key, (k, lockerId) -> doMaintain(k, lockerId, maintainForReadScript, Arrays.asList(lockerId, System.currentTimeMillis(), liveTime))));
         }
         keys = writeLockMaintainer.getKeys();
         for (String key : keys) {
-            maintainExecutor.execute(() -> writeLockMaintainer.maintain(key, (k, lockerId) -> doMaintain(k, lockerId, MAINTAIN_FOR_WRITE_SCRIPT, Arrays.asList(lockerId, liveTime))));
+            maintainExecutor.execute(() -> writeLockMaintainer.maintain(key, (k, lockerId) -> doMaintain(k, lockerId, maintainForWriteScript, Arrays.asList(lockerId, liveTime))));
         }
     }
 
     // 执行维护
-    private boolean doMaintain(String key, String lockerId, String script, List<Object> args) {
+    private boolean doMaintain(String key, String lockerId, Object script, List<Object> args) {
         String redisKey = computeRedisKey(key);
         boolean alive = true;
         try {
             alive = redisExecutor.eval(
                     script,
                     Collections.singletonList(redisKey),
-                    args,
-                    Boolean.class);
+                    args);
             if (alive) {
                 log.debug("调用redis维护读写锁成功：key={},lockerId={}", key, lockerId);
             } else {

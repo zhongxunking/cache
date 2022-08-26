@@ -50,8 +50,13 @@ public class SpringDataRedisExecutor implements RedisExecutor {
     }
 
     @Override
-    public <T> T eval(String script, List<String> keys, List<Object> args, Class<T> resultType) {
-        return redisExecutor.eval(script, keys, args, resultType);
+    public Object encodeScript(String script, Class<?> resultType) {
+        return redisExecutor.encodeScript(script, resultType);
+    }
+
+    @Override
+    public <T> T eval(Object encodedScript, List<String> keys, List<Object> args) {
+        return redisExecutor.eval(encodedScript, keys, args);
     }
 
     @Override
