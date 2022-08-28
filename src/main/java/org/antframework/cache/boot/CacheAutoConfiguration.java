@@ -69,7 +69,7 @@ public class CacheAutoConfiguration {
 
     // 缓存操作模板
     @Bean(name = "org.antframework.cache.CacheTemplate")
-    @ConditionalOnMissingBean(TransactionalCacheManager.class)
+    @ConditionalOnMissingBean(CacheTemplate.class)
     public CacheTemplate cacheTemplate(TransactionalCacheManager cacheManager) {
         return new CacheTemplate(cacheManager);
     }
