@@ -255,7 +255,7 @@ public abstract class AbstractTransactionalCacheManager<T extends TransactionalC
     // 事务上下文
     private class TxContext implements Copiable {
         // 缓存名称与缓存上下文的映射
-        private final Map<String, Map<Copiable, Copiable>> cacheNameContexts = new HashMap<>();
+        private final Map<String, Map<Copiable, Copiable>> cacheNameContexts = new TreeMap<>();
         // 是否只能回滚
         private boolean rollbackOnly = false;
 
