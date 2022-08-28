@@ -46,6 +46,7 @@ import java.util.TimerTask;
 /**
  * 缓存管理器配置
  */
+@Configuration
 @Slf4j
 public class CacheManagerConfiguration {
     // 缓存管理器

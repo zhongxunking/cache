@@ -76,6 +76,7 @@ public class CacheAutoConfiguration {
 
     // 导入缓存一致性方案5的缓存管理器配置
     @Configuration
+    @ConditionalOnMissingBean(TransactionalCacheManager.class)
     @ConditionalOnProperty(name = CacheProperties.ConsistencyV5.ENABLE_KEY, havingValue = "true", matchIfMissing = true)
     @Import(ConsistencyV5CacheManagerConfiguration.class)
     public static class ConsistencyV5CacheManagerConfigurationImporter {
@@ -83,6 +84,7 @@ public class CacheAutoConfiguration {
 
     // 导入缓存管理器配置
     @Configuration
+    @ConditionalOnMissingBean(TransactionalCacheManager.class)
     @ConditionalOnProperty(name = CacheProperties.ConsistencyV5.ENABLE_KEY, havingValue = "false")
     @Import(CacheManagerConfiguration.class)
     public static class CacheManagerConfigurationImporter {
