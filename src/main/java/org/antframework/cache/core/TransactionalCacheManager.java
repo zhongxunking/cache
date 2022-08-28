@@ -47,7 +47,7 @@ public interface TransactionalCacheManager extends CacheManager {
     void rollback(TransactionStatus status);
 
     /**
-     * 传播行为
+     * 事务传播行为
      */
     enum Propagation {
         /**
