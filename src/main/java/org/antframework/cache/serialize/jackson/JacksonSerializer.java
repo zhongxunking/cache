@@ -26,18 +26,17 @@ import java.util.TimeZone;
  */
 @AllArgsConstructor
 public class JacksonSerializer implements Serializer {
-    /**
-     * Jackson
-     */
-    public static final ObjectMapper OBJECT_MAPPER;
+    // Jackson
+    private static final ObjectMapper OBJECT_MAPPER;
 
     static {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.setTimeZone(TimeZone.getDefault());
         OBJECT_MAPPER.setLocale(Locale.getDefault());
-        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
+        OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     // 名称
