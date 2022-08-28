@@ -267,6 +267,7 @@ public class ConsistencyV5CacheManagerConfiguration {
             @Override
             public void run() {
                 try {
+                    log.debug("刷新本地缓存");
                     storageManager.refreshLocals();
                 } catch (Throwable e) {
                     log.error("刷新本地缓存出错", e);

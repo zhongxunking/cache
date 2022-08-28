@@ -9,6 +9,7 @@
 package org.antframework.cache.storage.localremote.change.springdataredis;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.serialize.Serializer;
 import org.antframework.cache.storage.localremote.ChangeListener;
 import org.antframework.cache.storage.localremote.change.Change;
@@ -25,6 +26,7 @@ import java.util.Set;
 /**
  * 基于spring-data-redis的修改监听器容器
  */
+@Slf4j
 public class SpringDataRedisChangeListenerContainer {
     // Redis消息通道
     private final ChannelTopic channel;
@@ -96,7 +98,7 @@ public class SpringDataRedisChangeListenerContainer {
                     }
                 }
             } catch (Throwable e) {
-                // todo 打印日志
+                log.error("接收到缓存变更消息后处理消息出错", e);
             }
         }
     }

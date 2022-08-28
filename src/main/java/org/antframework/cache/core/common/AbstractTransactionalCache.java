@@ -8,6 +8,7 @@
  */
 package org.antframework.cache.core.common;
 
+import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.common.Exceptions;
 import org.antframework.cache.core.Copiable;
 import org.antframework.cache.core.TransactionAware;
@@ -25,6 +26,7 @@ import java.util.function.Function;
 /**
  * 抽象支持事务能力的缓存
  */
+@Slf4j
 public abstract class AbstractTransactionalCache extends AbstractCache implements TransactionalCache {
     // 事务感知
     private final TransactionAware transactionAware;
@@ -262,7 +264,7 @@ public abstract class AbstractTransactionalCache extends AbstractCache implement
                         try {
                             writeLocks.get(i).unlock();
                         } catch (Throwable e) {
-                            // 忽略
+                            log.error("解写锁出错", e);
                         }
                     }
                     // 清理上下文
