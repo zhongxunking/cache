@@ -15,6 +15,7 @@ import org.antframework.cache.storage.localremote.ChangeListener;
 import org.antframework.cache.storage.localremote.change.empty.EmptyChangePublisher;
 import org.antframework.cache.storage.localremote.change.springdataredis.SpringDataRedisAsyncChangePublisher;
 import org.antframework.cache.storage.localremote.change.springdataredis.SpringDataRedisChangeListenerContainer;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,8 +93,12 @@ public class ChangePublisherConfiguration {
 
         // 计算发布键值对变更消息的通道
         private String computeChannel(CacheProperties properties, Environment environment) {
-            String namespace = ConfigurationUtils.computeNamespace(properties, environment);
-            return namespace + "-cache-change";
+            String channel = properties.getLocal().getPublisher().getRedis().getChannel();
+            if (StringUtils.isBlank(channel)) {
+                String namespace = ConfigurationUtils.computeNamespace(properties, environment);
+                channel = namespace + "-cache-change";
+            }
+            return channel;
         }
     }
 }
