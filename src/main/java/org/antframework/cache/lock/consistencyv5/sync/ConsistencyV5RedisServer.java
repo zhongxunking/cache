@@ -55,7 +55,6 @@ public class ConsistencyV5RedisServer implements Server {
                 readScopeAware,
                 writeScopeAware);
         this.timer.schedule(new MaintainTask(), liveTime / 10, liveTime / 10);
-
     }
 
     @Override
