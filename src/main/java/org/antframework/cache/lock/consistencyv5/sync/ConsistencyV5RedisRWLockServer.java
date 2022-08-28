@@ -129,7 +129,7 @@ public class ConsistencyV5RedisRWLockServer {
         String redisKey = computeRedisKey(key);
         long currentTime = System.currentTimeMillis();
         String syncChannel = computeSyncChannel(key);
-        PuttedValue puttedValue = readScopeAware.isActive() ? readScopeAware.getPuttedValue() : null;
+        PuttedValue puttedValue = readScopeAware.isActive() ? readScopeAware.removePuttedValue() : null;
         try {
             boolean success = redisExecutor.eval(
                     unlockForReadScript,
@@ -180,7 +180,7 @@ public class ConsistencyV5RedisRWLockServer {
         writeLockMaintainer.remove(key, lockerId);
         String redisKey = computeRedisKey(key);
         String syncChannel = computeSyncChannel(key);
-        PuttedValue puttedValue = writeScopeAware.isActive() ? writeScopeAware.getPuttedValue(key) : null;
+        PuttedValue puttedValue = writeScopeAware.isActive() ? writeScopeAware.removePuttedValue(key) : null;
         try {
             boolean success = redisExecutor.eval(
                     unlockForWriteScript,

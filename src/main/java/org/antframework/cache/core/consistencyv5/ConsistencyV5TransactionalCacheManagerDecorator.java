@@ -38,7 +38,7 @@ public class ConsistencyV5TransactionalCacheManagerDecorator extends AbstractCac
 
     @Override
     public void commit(TransactionStatus status, Runnable callback) {
-        target.commit(status, callback);
+        writeScopeAware.activate(() -> target.commit(status, () -> writeScopeAware.deactivate(callback)));
     }
 
     @Override

@@ -89,12 +89,14 @@ public class ReadScopeAware extends AbstractScopeAware<ReadScopeAware.Context> {
     }
 
     /**
-     * 获取设置的值
+     * 删除设置的值
      *
      * @return 设置的值
      */
-    public PuttedValue getPuttedValue() {
-        return getContext().puttedValue;
+    public PuttedValue removePuttedValue() {
+        PuttedValue puttedValue = getContext().puttedValue;
+        getContext().puttedValue = null;
+        return puttedValue;
     }
 
     // 上下文

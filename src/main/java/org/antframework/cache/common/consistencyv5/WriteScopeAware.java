@@ -31,13 +31,13 @@ public class WriteScopeAware extends AbstractScopeAware<WriteScopeAware.Context>
     }
 
     /**
-     * 获取设置的值
+     * 删除设置的值
      *
      * @param key 键
      * @return 设置的值
      */
-    public PuttedValue getPuttedValue(String key) {
-        return getContext().keyPuttedValues.get(key);
+    public PuttedValue removePuttedValue(String key) {
+        return getContext().keyPuttedValues.remove(key);
     }
 
     // 上下文
