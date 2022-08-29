@@ -62,6 +62,14 @@ public class LocalRemoteStorage implements Storage {
         }
     }
 
+    @Override
+    public void remove(String key) {
+        localStorage.remove(key);
+        remoteStorage.remove(key);
+        // 发布消息
+        publisher.publish(name, key);
+    }
+
     // 计算本地键值对存活时长
     private Long computeLocalLiveTime(byte[] value, Long liveTime) {
         Long time = Null.is(value) ? localNullValueLiveTime : localLiveTime;
@@ -73,14 +81,6 @@ public class LocalRemoteStorage implements Storage {
             }
         }
         return time;
-    }
-
-    @Override
-    public void remove(String key) {
-        localStorage.remove(key);
-        remoteStorage.remove(key);
-        // 发布消息
-        publisher.publish(name, key);
     }
 
     /**
