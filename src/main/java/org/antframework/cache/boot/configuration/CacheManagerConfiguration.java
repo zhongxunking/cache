@@ -149,7 +149,8 @@ public class CacheManagerConfiguration {
                         remote,
                         ConfigurationUtils.toLocalLiveTimeSupplier(properties.getLiveTime(), properties),
                         ConfigurationUtils.toLocalLiveTimeSupplier(properties.getNullValueLiveTime(), properties),
-                        publisher);
+                        publisher,
+                        properties.getLocal().getListenOrder());
                 if (properties.getLocal().getRefresher().isEnable()) {
                     initLocalRefresher(storageManager, properties);
                 }

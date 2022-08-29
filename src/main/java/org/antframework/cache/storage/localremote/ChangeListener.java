@@ -19,4 +19,11 @@ public interface ChangeListener {
      * @param key  被修改键值对的键
      */
     void listen(String name, String key);
+
+    /**
+     * 获取优先级（值越小优先级越高）
+     *
+     * @return 优先级
+     */
+    int getOrder();
 }

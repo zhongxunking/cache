@@ -20,8 +20,10 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.ChannelTopic;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 基于spring-data-redis的修改监听器容器
@@ -35,7 +37,7 @@ public class SpringDataRedisChangeListenerContainer {
     // Redis消息监听器
     private final MessageListener messageListener;
     // 变更监听器集
-    private volatile Set<ChangeListener> listeners = new HashSet<>();
+    private volatile List<ChangeListener> listeners = new ArrayList<>();
 
     public SpringDataRedisChangeListenerContainer(String channel, RedisConnectionFactory connectionFactory, Serializer serializer) {
         this.channel = new ChannelTopic(channel);
@@ -52,9 +54,10 @@ public class SpringDataRedisChangeListenerContainer {
         if (listeners.contains(listener)) {
             return;
         }
-        Set<ChangeListener> newListeners = new HashSet<>(listeners.size() + 1);
+        List<ChangeListener> newListeners = new ArrayList<>(listeners.size() + 1);
         newListeners.addAll(listeners);
         newListeners.add(listener);
+        Collections.sort(newListeners, Comparator.comparingInt(ChangeListener::getOrder));
         listeners = newListeners;
         if (listeners.size() == 1) {
             container.addMessageListener(messageListener, channel);
@@ -70,7 +73,7 @@ public class SpringDataRedisChangeListenerContainer {
         if (!listeners.contains(listener)) {
             return;
         }
-        Set<ChangeListener> newListeners = new HashSet<>(listeners);
+        List<ChangeListener> newListeners = new ArrayList<>(listeners);
         newListeners.remove(listener);
         listeners = newListeners;
         if (listeners.size() <= 0) {
@@ -91,7 +94,7 @@ public class SpringDataRedisChangeListenerContainer {
                 if (batch == null) {
                     return;
                 }
-                Set<ChangeListener> listenersCopy = listeners;
+                List<ChangeListener> listenersCopy = listeners;
                 for (ChangeListener listener : listenersCopy) {
                     for (Change change : batch.getChanges()) {
                         listener.listen(change.getName(), change.getKey());

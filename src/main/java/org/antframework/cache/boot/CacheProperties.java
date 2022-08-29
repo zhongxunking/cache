@@ -111,6 +111,10 @@ public class CacheProperties {
          * 是否启用本地缓存的key
          */
         public static final String ENABLE_KEY = "ant.cache.local.enable";
+        /**
+         * 默认的监听缓存键值对变更事件的优先级
+         */
+        public static final int DEFAULT_LISTEN_ORDER = 0;
 
         /**
          * 选填：是否启用本地缓存（true为启用，false为不启用；默认启用）
@@ -138,6 +142,10 @@ public class CacheProperties {
         @NotNull
         @Valid
         private Publisher publisher = new Publisher();
+        /**
+         * 选填：监听缓存变更事件的优先级（默认为0）
+         */
+        private int listenOrder = DEFAULT_LISTEN_ORDER;
 
         /**
          * 存活时长配置

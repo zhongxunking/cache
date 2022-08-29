@@ -30,6 +30,8 @@ public class LocalRemoteStorageManager extends AbstractManager<Storage> implemen
     private final Function<String, Long> localNullValueLiveTimeSupplier;
     // 修改发布器
     private final ChangePublisher publisher;
+    // 监听优先级
+    private final int listenOrder;
 
     @Override
     protected Storage create(String name) {
@@ -48,6 +50,11 @@ public class LocalRemoteStorageManager extends AbstractManager<Storage> implemen
             LocalRemoteStorage storage = (LocalRemoteStorage) get(name);
             storage.localRemove(key);
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return listenOrder;
     }
 
     /**
