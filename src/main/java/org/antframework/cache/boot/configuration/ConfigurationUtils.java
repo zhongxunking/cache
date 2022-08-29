@@ -93,7 +93,7 @@ public class ConfigurationUtils {
         if (StringUtils.isBlank(namespace)) {
             namespace = environment.getProperty("spring.application.name");
             if (StringUtils.isBlank(namespace)) {
-                throw new IllegalArgumentException("未配置缓存命名空间，可通过ant.cache.namespace或者spring.application.name配置");
+                throw new IllegalArgumentException("未配置Cache命名空间，可通过ant.cache.namespace或者spring.application.name配置");
             }
         }
         return namespace;
