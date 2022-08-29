@@ -45,8 +45,7 @@ public class LocalRemoteStorage implements Storage {
         if (value == null) {
             value = remoteStorage.get(key);
             if (value != null) {
-                Long liveTime = Null.is(value) ? localNullValueLiveTime : localLiveTime;
-                localStorage.put(key, value, liveTime, false);
+                localStorage.put(key, value, computeLocalLiveTime(value, null), false);
             }
         }
         return value;
@@ -56,11 +55,24 @@ public class LocalRemoteStorage implements Storage {
     public void put(String key, byte[] value, Long liveTime, boolean valueChanged) {
         localStorage.remove(key);
         remoteStorage.put(key, value, liveTime, valueChanged);
-        localStorage.put(key, value, liveTime, valueChanged);
+        localStorage.put(key, value, computeLocalLiveTime(value, liveTime), valueChanged);
         if (valueChanged) {
             // 发布消息
             publisher.publish(name, key);
         }
+    }
+
+    // 计算本地键值对存活时长
+    private Long computeLocalLiveTime(byte[] value, Long liveTime) {
+        Long time = Null.is(value) ? localNullValueLiveTime : localLiveTime;
+        if (liveTime != null) {
+            if (time == null) {
+                time = liveTime;
+            } else {
+                time = Math.min(time, liveTime);
+            }
+        }
+        return time;
     }
 
     @Override
