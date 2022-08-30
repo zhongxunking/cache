@@ -11,12 +11,14 @@ package org.antframework.cache.storage.localremote.change;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * 修改
  */
 @Getter
 @Setter
-public class Change {
+public class Change implements Serializable {
     // 仓库名称
     private String name;
     // 被修改键值对的键

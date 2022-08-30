@@ -11,6 +11,7 @@ package org.antframework.cache.storage.localremote.change;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class ChangeBatch {
+public class ChangeBatch implements Serializable {
     // 修改集
     private List<Change> changes;
 }
