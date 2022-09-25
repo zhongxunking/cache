@@ -97,7 +97,10 @@ public class ConsistencyV5CacheManagerConfiguration {
                 properties.getConsistencyV5().getLocker().getLiveTime(),
                 readScopeAware,
                 writeScopeAware);
-        SyncContext syncContext = new SyncContext(server, properties.getConsistencyV5().getLocker().getMaxWaitTime());
+        SyncContext syncContext = new SyncContext(
+                new org.antframework.sync.common.DefaultKeyConverter(),
+                server,
+                properties.getConsistencyV5().getLocker().getMaxWaitTime());
 
         return new ConsistencyV5LockerManager(ConfigurationUtils.buildKeyGenerator(properties, environment), syncContext);
     }
