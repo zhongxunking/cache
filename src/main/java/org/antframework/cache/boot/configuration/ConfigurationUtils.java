@@ -9,11 +9,9 @@
 package org.antframework.cache.boot.configuration;
 
 import org.antframework.cache.boot.CacheProperties;
-import org.antframework.cache.common.DefaultKeyGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -67,18 +65,6 @@ public class ConfigurationUtils {
             }
             return value;
         };
-    }
-
-    /**
-     * 构建键转换器
-     *
-     * @param properties  缓存配置
-     * @param environment env
-     * @return 建键转换器
-     */
-    public static BinaryOperator<String> buildKeyGenerator(CacheProperties properties, Environment environment) {
-        String namespace = computeNamespace(properties, environment);
-        return new DefaultKeyGenerator(namespace);
     }
 
     /**

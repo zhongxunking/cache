@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.boot.CacheProperties;
 import org.antframework.cache.common.DefaultKeyConverter;
+import org.antframework.cache.common.DefaultKeyGenerator;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
 import org.antframework.cache.common.consistencyv5.WriteScopeAware;
 import org.antframework.cache.common.consistencyv5.redis.RedisExecutor;
@@ -45,6 +46,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -99,9 +101,9 @@ public class ConsistencyV5CacheManagerConfiguration {
 
     // 加锁器管理器
     @Bean(name = "org.antframework.cache.lock.LockerManager")
-    public ConsistencyV5LockerManager lockerManager(RedisExecutor redisExecutor,
-                                                    CacheProperties properties,
-                                                    Environment environment) {
+    public ConsistencyV5LockerManager lockerManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                                    RedisExecutor redisExecutor,
+                                                    CacheProperties properties) {
         ConsistencyV5RedisServer server = new ConsistencyV5RedisServer(
                 redisExecutor,
                 properties.getConsistencyV5().getLocker().getLiveTime(),
@@ -112,25 +114,26 @@ public class ConsistencyV5CacheManagerConfiguration {
                 server,
                 properties.getConsistencyV5().getLocker().getMaxWaitTime());
 
-        return new ConsistencyV5LockerManager(ConfigurationUtils.buildKeyGenerator(properties, environment), syncContext);
+        return new ConsistencyV5LockerManager(keyGenerator, syncContext);
     }
 
     // 仓库管理器
     @Bean(name = "org.antframework.cache.storage.StorageManager")
     @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "false")
-    public StorageManager storageManager(ConsistencyV5LockerManager lockerManager,
+    public StorageManager storageManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                         ConsistencyV5LockerManager lockerManager,
                                          RedisExecutor redisExecutor,
                                          CounterManager counterManager,
                                          CacheProperties properties,
                                          Environment environment) {
         return StorageManagers.build(
+                keyGenerator,
                 readScopeAware,
                 writeScopeAware,
                 lockerManager,
                 redisExecutor,
                 counterManager,
-                properties,
-                environment);
+                properties);
     }
 
     /**
@@ -143,15 +146,15 @@ public class ConsistencyV5CacheManagerConfiguration {
         public static final String ORDERED_NAME = "0-Remote-Redis";
 
         // 构建仓库管理器
-        static StorageManager build(ReadScopeAware readScopeAware,
+        static StorageManager build(BinaryOperator<String> keyGenerator,
+                                    ReadScopeAware readScopeAware,
                                     WriteScopeAware writeScopeAware,
                                     ConsistencyV5LockerManager lockerManager,
                                     RedisExecutor redisExecutor,
                                     CounterManager counterManager,
-                                    CacheProperties properties,
-                                    Environment environment) {
+                                    CacheProperties properties) {
             StorageManager remote = new ConsistencyV5StorageManager(
-                    ConfigurationUtils.buildKeyGenerator(properties, environment),
+                    keyGenerator,
                     readScopeAware,
                     writeScopeAware,
                     lockerManager,
@@ -166,21 +169,21 @@ public class ConsistencyV5CacheManagerConfiguration {
     // 本地和远程复合型仓库管理器
     @Bean(name = "org.antframework.cache.storage.StorageManager")
     @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "true", matchIfMissing = true)
-    public LocalRemoteStorageManager localRemoteStorageManager(ConsistencyV5LockerManager lockerManager,
+    public LocalRemoteStorageManager localRemoteStorageManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                                               ConsistencyV5LockerManager lockerManager,
                                                                RedisExecutor redisExecutor,
                                                                ChangePublisher publisher,
                                                                CounterManager counterManager,
-                                                               CacheProperties properties,
-                                                               Environment environment) {
+                                                               CacheProperties properties) {
         return LocalRemoteStorageManagers.build(
+                keyGenerator,
                 readScopeAware,
                 writeScopeAware,
                 lockerManager,
                 redisExecutor,
                 publisher,
                 counterManager,
-                properties,
-                environment);
+                properties);
     }
 
     /**
@@ -201,23 +204,23 @@ public class ConsistencyV5CacheManagerConfiguration {
         public static final String LOCAL_REFRESHER_NAME = "ant.cache.local.refresher";
 
         // 构建仓库管理器
-        static LocalRemoteStorageManager build(ReadScopeAware readScopeAware,
+        static LocalRemoteStorageManager build(BinaryOperator<String> keyGenerator,
+                                               ReadScopeAware readScopeAware,
                                                WriteScopeAware writeScopeAware,
                                                ConsistencyV5LockerManager lockerManager,
                                                RedisExecutor redisExecutor,
                                                ChangePublisher publisher,
                                                CounterManager counterManager,
-                                               CacheProperties properties,
-                                               Environment environment) {
+                                               CacheProperties properties) {
             StorageManager local = buildLocal(counterManager, properties);
             StorageManager remote = buildRemote(
+                    keyGenerator,
                     readScopeAware,
                     writeScopeAware,
                     lockerManager,
                     redisExecutor,
                     counterManager,
-                    properties,
-                    environment);
+                    properties);
 
             LocalRemoteStorageManager storageManager = new LocalRemoteStorageManager(
                     local,
@@ -244,15 +247,15 @@ public class ConsistencyV5CacheManagerConfiguration {
         }
 
         // 构建远程仓库
-        private static StorageManager buildRemote(ReadScopeAware readScopeAware,
+        private static StorageManager buildRemote(BinaryOperator<String> keyGenerator,
+                                                  ReadScopeAware readScopeAware,
                                                   WriteScopeAware writeScopeAware,
                                                   ConsistencyV5LockerManager lockerManager,
                                                   RedisExecutor redisExecutor,
                                                   CounterManager counterManager,
-                                                  CacheProperties properties,
-                                                  Environment environment) {
+                                                  CacheProperties properties) {
             StorageManager remote = new ConsistencyV5StorageManager(
-                    ConfigurationUtils.buildKeyGenerator(properties, environment),
+                    keyGenerator,
                     readScopeAware,
                     writeScopeAware,
                     lockerManager,
@@ -288,6 +291,14 @@ public class ConsistencyV5CacheManagerConfiguration {
                 }
             }
         }
+    }
+
+    // key生成器
+    @Bean(name = CacheProperties.KEY_GENERATOR_BEAN_NAME)
+    @ConditionalOnMissingBean(name = CacheProperties.KEY_GENERATOR_BEAN_NAME)
+    public DefaultKeyGenerator keyGenerator(CacheProperties properties, Environment environment) {
+        String namespace = ConfigurationUtils.computeNamespace(properties, environment);
+        return new DefaultKeyGenerator(namespace);
     }
 
     // 环路计数器管理器

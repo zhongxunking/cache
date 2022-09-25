@@ -37,6 +37,10 @@ public class CacheProperties {
      * key转换器的bean名称
      */
     public static final String KEY_CONVERTER_BEAN_NAME = "org.antframework.cache.keyConverter";
+    /**
+     * key生成器的bean名称
+     */
+    public static final String KEY_GENERATOR_BEAN_NAME = "org.antframework.cache.keyGenerator";
 
     /**
      * 选填：是否启用Cache（默认启用）

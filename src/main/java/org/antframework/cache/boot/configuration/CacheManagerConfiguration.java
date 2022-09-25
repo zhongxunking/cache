@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.boot.CacheProperties;
 import org.antframework.cache.common.DefaultKeyConverter;
+import org.antframework.cache.common.DefaultKeyGenerator;
 import org.antframework.cache.common.redis.springdataredis.Redis;
 import org.antframework.cache.core.TransactionalCacheManager;
 import org.antframework.cache.core.defense.DefensibleTransactionalCacheManager;
@@ -43,6 +44,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -92,8 +94,9 @@ public class CacheManagerConfiguration {
     // Sync加锁器管理器
     @Bean(name = "org.antframework.cache.lock.LockerManager")
     @ConditionalOnMissingBean(LockerManager.class)
-    public SyncLockerManager lockerManager(SyncContext syncContext, CacheProperties properties, Environment environment) {
-        return new SyncLockerManager(ConfigurationUtils.buildKeyGenerator(properties, environment), syncContext);
+    public SyncLockerManager lockerManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                           SyncContext syncContext) {
+        return new SyncLockerManager(keyGenerator, syncContext);
     }
 
     /**
@@ -110,11 +113,11 @@ public class CacheManagerConfiguration {
         // Redis仓库管理器
         @Bean(name = "org.antframework.cache.storage.StorageManager")
         @ConditionalOnProperty(name = CacheProperties.Local.ENABLE_KEY, havingValue = "false")
-        public StorageManager storageManager(RedisExecutor redisExecutor,
+        public StorageManager storageManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                             RedisExecutor redisExecutor,
                                              CounterManager counterManager,
-                                             CacheProperties properties,
-                                             Environment environment) {
-            StorageManager storageManager = new RedisStorageManager(ConfigurationUtils.buildKeyGenerator(properties, environment), redisExecutor);
+                                             CacheProperties properties) {
+            StorageManager storageManager = new RedisStorageManager(keyGenerator, redisExecutor);
             if (properties.getStatistic().isEnable()) {
                 storageManager = new StatisticalStorageManagerDecorator(storageManager, ORDERED_NAME, counterManager);
             }
@@ -142,17 +145,17 @@ public class CacheManagerConfiguration {
 
             // 本地和远程复合型仓库管理器
             @Bean(name = "org.antframework.cache.storage.StorageManager")
-            public LocalRemoteStorageManager storageManager(RedisExecutor redisExecutor,
+            public LocalRemoteStorageManager storageManager(@Qualifier(CacheProperties.KEY_GENERATOR_BEAN_NAME) BinaryOperator<String> keyGenerator,
+                                                            RedisExecutor redisExecutor,
                                                             ChangePublisher publisher,
                                                             CounterManager counterManager,
-                                                            CacheProperties properties,
-                                                            Environment environment) {
+                                                            CacheProperties properties) {
                 StorageManager local = buildLocal(counterManager, properties);
                 StorageManager remote = buildRemote(
+                        keyGenerator,
                         redisExecutor,
                         counterManager,
-                        properties,
-                        environment);
+                        properties);
 
                 LocalRemoteStorageManager storageManager = new LocalRemoteStorageManager(
                         local,
@@ -179,11 +182,11 @@ public class CacheManagerConfiguration {
             }
 
             // 构建远程仓库
-            private StorageManager buildRemote(RedisExecutor redisExecutor,
+            private StorageManager buildRemote(BinaryOperator<String> keyGenerator,
+                                               RedisExecutor redisExecutor,
                                                CounterManager counterManager,
-                                               CacheProperties properties,
-                                               Environment environment) {
-                StorageManager remote = new RedisStorageManager(ConfigurationUtils.buildKeyGenerator(properties, environment), redisExecutor);
+                                               CacheProperties properties) {
+                StorageManager remote = new RedisStorageManager(keyGenerator, redisExecutor);
                 if (properties.getStatistic().isEnable()) {
                     remote = new StatisticalStorageManagerDecorator(remote, REMOTE_ORDERED_NAME, counterManager);
                 }
@@ -229,6 +232,14 @@ public class CacheManagerConfiguration {
         public SpringDataRedisExecutor redisExecutor(RedisConnectionFactory connectionFactory) {
             return new SpringDataRedisExecutor(new Redis(connectionFactory));
         }
+    }
+
+    // key生成器
+    @Bean(name = CacheProperties.KEY_GENERATOR_BEAN_NAME)
+    @ConditionalOnMissingBean(name = CacheProperties.KEY_GENERATOR_BEAN_NAME)
+    public DefaultKeyGenerator keyGenerator(CacheProperties properties, Environment environment) {
+        String namespace = ConfigurationUtils.computeNamespace(properties, environment);
+        return new DefaultKeyGenerator(namespace);
     }
 
     // 环路计数器管理器
