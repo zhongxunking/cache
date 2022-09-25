@@ -10,12 +10,12 @@ package org.antframework.cache.core.consistencyv5;
 
 import lombok.AllArgsConstructor;
 import org.antframework.cache.common.Exceptions;
+import org.antframework.cache.common.ObjectReference;
 import org.antframework.cache.common.consistencyv5.ReadScopeAware;
 import org.antframework.cache.common.consistencyv5.WriteScopeAware;
 import org.antframework.cache.core.TransactionalCache;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 缓存一致性方案5的缓存装饰器
@@ -46,10 +46,10 @@ public class ConsistencyV5TransactionalCacheDecorator implements TransactionalCa
 
     @Override
     public <T> T get(Object key, Class<T> type, Callable<T> valueLoader) {
-        AtomicReference<T> value = new AtomicReference<>(null);
+        ObjectReference<T> value = new ObjectReference<>(null);
         readScopeAware.activate(() -> {
             T v = target.get(key, type, () -> {
-                AtomicReference<T> loadedValue = new AtomicReference<>(null);
+                ObjectReference<T> loadedValue = new ObjectReference<>(null);
                 readScopeAware.deactivate(() -> {
                     T t = Exceptions.call(valueLoader);
                     loadedValue.set(t);

@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.antframework.cache.boot.cache.ValueTypeAware;
 import org.antframework.cache.common.Exceptions;
+import org.antframework.cache.common.ObjectReference;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
@@ -24,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 能感知值类型的CacheInterceptor装饰器
@@ -40,7 +40,7 @@ public class AwareValueTypeCacheInterceptorDecorator extends CacheInterceptor {
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        AtomicReference<Object> result = new AtomicReference<>(null);
+        ObjectReference<Object> result = new ObjectReference<>(null);
         Class<?> valueType = getValueType(invocation);
         valueTypeAware.doAware(valueType, () -> {
             try {

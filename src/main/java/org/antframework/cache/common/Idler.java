@@ -13,7 +13,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
@@ -40,9 +39,9 @@ public class Idler {
             v.ready();
             return v;
         });
-        AtomicReference<T> target = new AtomicReference<>(null);
+        ObjectReference<T> target = new ObjectReference<>(null);
         if (waitPoint.amIRunner()) {
-            AtomicReference<Throwable> ex = new AtomicReference<>(null);
+            ObjectReference<Throwable> ex = new ObjectReference<>(null);
             try {
                 target.set(targetLoader.call());
             } catch (Throwable e) {
