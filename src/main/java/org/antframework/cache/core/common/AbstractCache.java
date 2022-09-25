@@ -127,12 +127,13 @@ public abstract class AbstractCache implements Cache {
 
     // 转换缓存键
     private String convertKey(Object key) {
-        if (key == null) {
+        String convertedKey = keyConverter.apply(key);
+        if (convertedKey == null) {
             if (!allowNull) {
-                throw new IllegalArgumentException("key不能为null");
+                throw new IllegalArgumentException(String.format("转换后的key不能为null(原始key:%s)", key));
             }
-            return Null.getString();
+            convertedKey = Null.getString();
         }
-        return keyConverter.apply(key);
+        return convertedKey;
     }
 }
