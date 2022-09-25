@@ -47,10 +47,37 @@ public interface TransactionalCacheManager extends CacheManager {
     void rollback(TransactionStatus status);
 
     /**
-     * 传播行为
+     * 事务传播行为
      */
     enum Propagation {
-        REQUIRED, REQUIRES_NEW, NESTED, SUPPORTS, NOT_SUPPORTED, MANDATORY, NEVER
+        /**
+         * 融合事务（如果已存在事务，则使用已存在事务；否则创建新事务）
+         */
+        REQUIRED,
+        /**
+         * 新事务（不管是否已存在事务，都创建新事务）
+         */
+        REQUIRES_NEW,
+        /**
+         * 嵌套事务（如果已存在事务，则在事务内部进行嵌套；否则创建新事务）
+         */
+        NESTED,
+        /**
+         * 支持事务（如果已存在事务，则使用已存在事务；否则不使用事务）
+         */
+        SUPPORTS,
+        /**
+         * 不支持事务（不使用事务（如果已存在事务，则挂起已存在的事务））
+         */
+        NOT_SUPPORTED,
+        /**
+         * 强制事务（如果已存在事务，则使用已存在事务；否则报错）
+         */
+        MANDATORY,
+        /**
+         * 强制非事务（不使用事务（如果已存在事务，则报错））
+         */
+        NEVER
     }
 
     /**

@@ -18,6 +18,10 @@ import java.util.function.BinaryOperator;
 @AllArgsConstructor
 public class DefaultKeyGenerator implements BinaryOperator<String> {
     /**
+     * Cache
+     */
+    public static final String CACHE = "cache";
+    /**
      * 分隔符
      */
     public static final String SEPARATOR = "::";
@@ -27,6 +31,6 @@ public class DefaultKeyGenerator implements BinaryOperator<String> {
 
     @Override
     public String apply(String name, String key) {
-        return namespace + SEPARATOR + name + SEPARATOR + key;
+        return namespace + SEPARATOR + CACHE + SEPARATOR + name + SEPARATOR + key;
     }
 }

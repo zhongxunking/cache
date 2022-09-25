@@ -9,49 +9,40 @@
 package org.antframework.cache.storage.localremote.change.springdataredis;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.serialize.Serializer;
 import org.antframework.cache.storage.localremote.ChangeListener;
 import org.antframework.cache.storage.localremote.change.Change;
 import org.antframework.cache.storage.localremote.change.ChangeBatch;
+import org.antframework.sync.extension.redis.extension.springdataredis.support.RedisListenerContainer;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 基于spring-data-redis的修改监听器容器
  */
+@Slf4j
 public class SpringDataRedisChangeListenerContainer {
     // Redis消息通道
     private final ChannelTopic channel;
+    // Redis监听器容器
+    private final RedisListenerContainer container;
     // Redis消息监听器
     private final MessageListener messageListener;
-    // Redis监听器容器
-    private final RedisMessageListenerContainer container;
     // 变更监听器集
-    private volatile Set<ChangeListener> listeners = new HashSet<>();
+    private volatile List<ChangeListener> listeners = new ArrayList<>();
 
     public SpringDataRedisChangeListenerContainer(String channel, RedisConnectionFactory connectionFactory, Serializer serializer) {
         this.channel = new ChannelTopic(channel);
+        this.container = new RedisListenerContainer(connectionFactory);
         this.messageListener = new RedisListener(serializer);
-        this.container = buildContainer(connectionFactory);
-    }
-
-    // 构建Redis监听器容器
-    private RedisMessageListenerContainer buildContainer(RedisConnectionFactory connectionFactory) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.afterPropertiesSet();
-        container.start();
-        // 添加空监听器，防止容器报错
-        container.addMessageListener((message, pattern) -> {
-        }, new ChannelTopic("cache"));
-
-        return container;
     }
 
     /**
@@ -63,9 +54,10 @@ public class SpringDataRedisChangeListenerContainer {
         if (listeners.contains(listener)) {
             return;
         }
-        Set<ChangeListener> newListeners = new HashSet<>(listeners.size() + 1);
+        List<ChangeListener> newListeners = new ArrayList<>(listeners.size() + 1);
         newListeners.addAll(listeners);
         newListeners.add(listener);
+        Collections.sort(newListeners, Comparator.comparingInt(ChangeListener::getOrder));
         listeners = newListeners;
         if (listeners.size() == 1) {
             container.addMessageListener(messageListener, channel);
@@ -81,11 +73,11 @@ public class SpringDataRedisChangeListenerContainer {
         if (!listeners.contains(listener)) {
             return;
         }
-        Set<ChangeListener> newListeners = new HashSet<>(listeners);
+        List<ChangeListener> newListeners = new ArrayList<>(listeners);
         newListeners.remove(listener);
         listeners = newListeners;
         if (listeners.size() <= 0) {
-            container.removeMessageListener(messageListener);
+            container.removeMessageListener(messageListener, channel);
         }
     }
 
@@ -102,14 +94,14 @@ public class SpringDataRedisChangeListenerContainer {
                 if (batch == null) {
                     return;
                 }
-                Set<ChangeListener> listenersCopy = listeners;
+                List<ChangeListener> listenersCopy = listeners;
                 for (ChangeListener listener : listenersCopy) {
                     for (Change change : batch.getChanges()) {
                         listener.listen(change.getName(), change.getKey());
                     }
                 }
             } catch (Throwable e) {
-                // todo 打印日志
+                log.error("接收到缓存变更消息后处理消息出错", e);
             }
         }
     }

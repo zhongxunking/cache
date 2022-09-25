@@ -8,6 +8,7 @@
  */
 package org.antframework.cache.storage.localremote.change;
 
+import lombok.extern.slf4j.Slf4j;
 import org.antframework.cache.storage.localremote.ChangePublisher;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.concurrent.*;
 /**
  * 抽象异步修改发布器
  */
+@Slf4j
 public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
     // 队列
     private final BlockingQueue<Change> queue;
@@ -43,12 +45,11 @@ public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
             } else {
                 boolean success = queue.offer(change, timeout, TimeUnit.MILLISECONDS);
                 if (!success) {
-                    // todo 打印日志
+                    log.error("将缓存变更消息放入发送队列超时，超时时长:{}ms", timeout);
                 }
             }
-        } catch (InterruptedException e) {
-            // 忽略
-            // todo 打印日志
+        } catch (Throwable e) {
+            log.error("将缓存变更消息放入发送队列失败", e);
         }
     }
 
@@ -97,18 +98,15 @@ public abstract class AbstractAsyncChangePublisher implements ChangePublisher {
                         try {
                             doPublish(batch);
                         } catch (Throwable e) {
-                            // 忽略
-                            // todo 打印日志
+                            log.error("发送缓存变更消息失败", e);
                         }
                     });
                 } catch (Throwable e) {
-                    // 忽略
-                    // todo 打印日志
+                    log.error("发送缓存变更消息失败", e);
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException ex) {
                         // 忽略
-                        // todo 打印日志
                     }
                 }
             }

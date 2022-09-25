@@ -33,6 +33,14 @@ public class CacheProperties {
      * 是否启用Cache的key
      */
     public static final String ENABLE_KEY = "ant.cache.enable";
+    /**
+     * key转换器的bean名称
+     */
+    public static final String KEY_CONVERTER_BEAN_NAME = "org.antframework.cache.keyConverter";
+    /**
+     * key生成器的bean名称
+     */
+    public static final String KEY_GENERATOR_BEAN_NAME = "org.antframework.cache.keyGenerator";
 
     /**
      * 选填：是否启用Cache（默认启用）
@@ -89,6 +97,12 @@ public class CacheProperties {
     @Valid
     private Statistic statistic = new Statistic();
     /**
+     * 选填：缓存一致性方案5相关配置
+     */
+    @NotNull
+    @Valid
+    private ConsistencyV5 consistencyV5 = new ConsistencyV5();
+    /**
      * 选填：BeanPostProcessor相关配置
      */
     @NotNull
@@ -105,6 +119,10 @@ public class CacheProperties {
          * 是否启用本地缓存的key
          */
         public static final String ENABLE_KEY = "ant.cache.local.enable";
+        /**
+         * 默认的监听缓存键值对变更事件的优先级
+         */
+        public static final int DEFAULT_LISTEN_ORDER = 0;
 
         /**
          * 选填：是否启用本地缓存（true为启用，false为不启用；默认启用）
@@ -132,6 +150,10 @@ public class CacheProperties {
         @NotNull
         @Valid
         private Publisher publisher = new Publisher();
+        /**
+         * 选填：监听缓存变更事件的优先级（默认为0）
+         */
+        private int listenOrder = DEFAULT_LISTEN_ORDER;
 
         /**
          * 存活时长配置
@@ -266,11 +288,56 @@ public class CacheProperties {
     }
 
     /**
+     * 缓存一致性方案5相关配置
+     */
+    @Getter
+    @Setter
+    public static class ConsistencyV5 {
+        /**
+         * 是否启用缓存一致性方案5的key
+         */
+        public static final String ENABLE_KEY = "ant.cache.consistency-v5.enable";
+
+        /**
+         * 选填：是否启用缓存一致性方案5（true为启用，false为不启用；默认启用）
+         */
+        private boolean enable = true;
+        /**
+         * 选填：加锁器相关配置
+         */
+        @NotNull
+        @Valid
+        private Locker locker = new Locker();
+
+        /**
+         * 加锁器相关配置
+         */
+        @Getter
+        @Setter
+        public static class Locker {
+            /**
+             * 选填：加锁器等待同步消息的最长时间（毫秒，默认为10秒）
+             */
+            @Min(0)
+            private long maxWaitTime = 10 * 1000;
+            /**
+             * 选填：发生异常时redis中加锁器数据的存活时长（毫秒，默认为10分钟）
+             */
+            @Min(1)
+            private long liveTime = 10 * 60 * 1000;
+        }
+    }
+
+    /**
      * BeanPostProcessor相关配置
      */
     @Getter
     @Setter
     public static class BeanProcessor {
+        /**
+         * 默认装饰CacheInterceptor处理器的优先级
+         */
+        public static final int DEFAULT_DECORATE_CACHE_INTERCEPTOR_ORDER = Ordered.LOWEST_PRECEDENCE - 300;
         /**
          * 默认强制@Cacheable(sync=true)处理器的优先级
          */
@@ -280,6 +347,10 @@ public class CacheProperties {
          */
         public static final int DEFAULT_DECORATE_TRANSACTION_MANAGER_ORDER = Ordered.LOWEST_PRECEDENCE - 100;
 
+        /**
+         * 选填：装饰CacheInterceptor处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 300）
+         */
+        private int decorateCacheInterceptorOrder = DEFAULT_DECORATE_CACHE_INTERCEPTOR_ORDER;
         /**
          * 选填：强制@Cacheable(sync=true)处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 200）
          */
