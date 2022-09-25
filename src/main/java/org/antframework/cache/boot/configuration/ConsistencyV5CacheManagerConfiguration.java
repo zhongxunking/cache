@@ -34,6 +34,7 @@ import org.antframework.cache.storage.localremote.ChangePublisher;
 import org.antframework.cache.storage.localremote.LocalRemoteStorageManager;
 import org.antframework.cache.storage.statistic.StatisticalStorageManagerDecorator;
 import org.antframework.sync.SyncContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +45,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Function;
 
 /**
  * 缓存一致性方案5的缓存管理器配置
@@ -58,14 +60,15 @@ public class ConsistencyV5CacheManagerConfiguration {
 
     // 缓存管理器
     @Bean(name = "org.antframework.cache.core.TransactionalCacheManager")
-    public OnoffTransactionalCacheManager cacheManager(SerializerManager serializerManager,
+    public OnoffTransactionalCacheManager cacheManager(@Qualifier(CacheProperties.KEY_CONVERTER_BEAN_NAME) Function<Object, String> keyConverter,
+                                                       SerializerManager serializerManager,
                                                        ConsistencyV5LockerManager lockerManager,
                                                        StorageManager storageManager,
                                                        CounterManager counterManager,
                                                        CacheProperties properties) {
         TransactionalCacheManager cacheManager = new DefensibleTransactionalCacheManager(
                 ConfigurationUtils.toSupplier(properties.getAllowNull()),
-                new DefaultKeyConverter(),
+                keyConverter,
                 serializerManager,
                 lockerManager,
                 ConfigurationUtils.toLongSupplier(properties.getMaxLockWaitTime()),
@@ -78,6 +81,13 @@ public class ConsistencyV5CacheManagerConfiguration {
             cacheManager = new StatisticalTransactionalCacheManagerDecorator(cacheManager, counterManager);
         }
         return new OnoffTransactionalCacheManager(properties::isCacheSwitch, cacheManager);
+    }
+
+    // key转换器
+    @Bean(name = CacheProperties.KEY_CONVERTER_BEAN_NAME)
+    @ConditionalOnMissingBean(name = CacheProperties.KEY_CONVERTER_BEAN_NAME)
+    public DefaultKeyConverter keyConverter() {
+        return new DefaultKeyConverter();
     }
 
     // Hessian序列化器管理器
