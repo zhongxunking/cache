@@ -206,12 +206,12 @@ public class CacheProperties {
              */
             private boolean enable = true;
             /**
-             * 选填：各缓存键值对有变更时，发布消息的队列容量（默认为4096）
+             * 选填：各缓存键值对有变更时，发布消息的本地队列容量（默认为4096）
              */
             @Min(1)
             private int queueSize = 4096;
             /**
-             * 选填：将通知消息放入队列时的超时时长（单位：毫秒；-1表示一直等待直到成功；默认为5秒）
+             * 选填：将通知消息放入本地队列时的超时时长（单位：毫秒；-1表示一直等待直到成功；默认为5秒）
              */
             @Min(-1)
             private long inQueueTimeout = 5000;
@@ -321,7 +321,7 @@ public class CacheProperties {
             @Min(0)
             private long maxWaitTime = 10 * 1000;
             /**
-             * 选填：发生异常时redis中加锁器数据的存活时长（毫秒，默认为10分钟）
+             * 选填：发生异常时Redis中加锁器数据的存活时长（毫秒，默认为10分钟）
              */
             @Min(1)
             private long liveTime = 10 * 60 * 1000;
