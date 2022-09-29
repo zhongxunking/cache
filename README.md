@@ -133,7 +133,7 @@ Cache提供的各种能力对使用方来说几乎是透明的，使用方无需
 
 Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spring-cache的注解和接口来透明的使用本Cache。 当然你也可以使用本Cache的接口和CacheTemplate来使用缓存。
 
-> 注意：使用本Cache时无需担心spring-transaction管理的事务是否存在嵌套的情况（比如：一个service的@Transactional方法调用另一个service的@Transactional方法），本Cache都能很好的工作。并且本Cache具备对各个不同未提交事务的相互隔离，不会出现缓存脏读的情况。总而言之，使用本Cache让你可以透明化的具有缓存和数据库强一致的能力。
+> 注意：使用本Cache时无需担心spring-transaction管理的事务是否存在嵌套的情况（比如：一个service的@Transactional方法调用另一个service的@Transactional方法），本Cache都能很好的工作。并且本Cache具备对各个未提交事务的相互隔离能力，不会出现缓存脏读的情况。总而言之，使用本Cache让你可以透明化的具有缓存和数据库强一致的能力。
 
 ### 2.1 通过spring-cache使用
 使用本Cache和自己使用spring-cache并无区别，按照常规的使用spring-cache来操作缓存即可，本Cache提供的各种能力对使用方来说是透明化的支持。
