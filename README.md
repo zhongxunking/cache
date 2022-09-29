@@ -28,7 +28,7 @@ Cache支持SpringBoot v2.x，也支持SpringBoot v1.x
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>
-    <version>${对应的spring-boot版本}</version>
+    <version>${spring-boot版本}</version>
 </dependency>
 ```
 
