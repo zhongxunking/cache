@@ -414,5 +414,5 @@ public Map<String, Counter.Statistic> count() {
 Cache本身提供极其灵活的扩展
 * 如果想自己实现序列化器，可自己实现org.antframework.cache.serialize.SerializerManager接口（默认使用Hessian作为序列化器）
 * 如果想自己实现数据存储，可自己实现org.antframework.cache.storage.StorageManager接口（默认使用Caffeine作为本地缓存，Redis作为远程缓存）
-* 如果想自己实现缓存统计器，可自己实现org.antframework.cache.serialize.SerializerManager接口（默认使用本地内存暂存缓存统计信息）
+* 如果想自己实现缓存统计器，可自己实现org.antframework.cache.statistic.CounterManager接口（默认使用本地内存暂存缓存统计信息）
 * 如果想自己实现加锁器，可自己实现org.antframework.cache.lock.LockerManager接口（默认采用基于Redis的分布式读写锁加锁器）
