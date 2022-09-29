@@ -261,6 +261,7 @@ public class UserService {
 ### 2.2 通过本Cache的接口和CacheTemplate使用
 
 #### 2.2.1 通过本Cache的接口使用
+本Cache的接口和spring-cache接口的名称、方法、作用都很相似
 ```java
 // 业务操作Service
 @Service
@@ -310,7 +311,6 @@ public class UserService {
     }
 }
 ```
-本Cache的接口和spring-cache接口的名称、方法、作用都很相似
 > 注意：
 > 1. 本Cache不支持clear操作，所以Cache没有clear方法
 > 2. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从数据库获取数据，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
