@@ -358,8 +358,7 @@ public class UserService {
 > 1. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从底层数据获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从底层数据获取，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
 
 ## 3. Cache统计
-Cache默认提供统计最近24小时统计粒度为1分钟的缓存查询统计，包括：查询耗时、本地缓存命中和未命中次数、远程缓存命中和未命中次数、底层数据加载耗时、缓存功效等。
-使用方可通过org.antframework.cache.statistic.CounterManager获取Cache统计数据。
+Cache默认提供统计最近24小时统计粒度为1分钟的缓存查询统计，包括：查询耗时、本地缓存命中和未命中次数、远程缓存命中和未命中次数、底层数据加载耗时、缓存功效等。使用方可通过org.antframework.cache.statistic.CounterManager获取Cache统计数据。
 
 通过如下方式获取统计结果：
 ```java
