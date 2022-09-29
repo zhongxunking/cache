@@ -1,23 +1,26 @@
 # Cache
 
-### 简介
+##### 简介
 
 Cache是一款分布式场景下基于Redis的高性能强一致的缓存组件，提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
 
 > 本组件已经上传到[maven中央库](https://search.maven.org/search?q=org.antframework.cache)
 
-### 环境要求
+##### 环境要求
 * JDK1.8及以上
 
-### 技术支持
+##### 设计
+[整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1)
+
+##### 技术支持
 欢迎加我微信（zhong_xun_）入群交流。<br/>
 <img src="https://note.youdao.com/yws/api/personal/file/WEBbca9e0a9a6e1ea2d9ab9def1cc90f839?method=download&shareKey=00e90849ae0d3b5cb8ed7dd12bc6842e" width=150 />
-
 
 ## 1. 将Cache引入进你的系统
 引入Cache很简单，按照以下操作即可。
 
 ### 1.1 引入Maven依赖
+Cache支持SpringBoot v2.x，也支持SpringBoot v1.x
 ```xml
 <dependency>
     <groupId>org.antframework.cache</groupId>
@@ -125,135 +128,231 @@ ant.cache.bean-processor.decorate-transaction-manager-order=2147483547
 ```
 
 ## 2. 使用Cache
-Cache提供的各种能力对使用放来说几乎是透明的，使用方无需感知到Cache的存在，按照常规的使用spring-cache来操作缓存即可。
+Cache提供的各种能力对使用方来说几乎是透明的，使用方无需感知到Cache的存在，按照常规的使用spring-cache来操作缓存即可。
 具体如下：
 * 本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力：对使用方来说是透明化的支持，使用方无需感知到Cache的存在。
-* 缓存高性能强一致能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。2、对于被缓存的对象不是数据库中的数据，或事务不是通过spring-transaction来管理的场景，则可以通过org.antframework.cache.CacheTemplate.consistentDo()方式来达到缓存强一致。
+* 缓存高性能强一致能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。注意：在修改数据库中数据和缓存时，需先通过spring-transaction开启事务（通过@Transactional注解或PlatformTransactionManager开启事务），才能保证缓存强一致（即使没有本Cache，在修改数据库中数据时你也需要开启事务）。2、对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致。
 
-Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spring-cache的接口和注解来透明的使用本Cache。 当然你也可以使用本Cache的接口和CacheTemplate来使用缓存。
+Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spring-cache的注解和接口来透明的使用本Cache。 当然你也可以使用本Cache的接口和CacheTemplate来使用缓存。
+
+> 注意：使用本Cache时无需担心spring-transaction管理的事务是否存在嵌套的情况（比如：一个service的@Transactional方法调用另一个service的@Transactional方法），本Cache都能很好的工作。并且本Cache具备对各个不同未提交事务的相互隔离，不会出现缓存脏读的情况。总而言之，使用本Cache让你可以透明化的具有缓存和数据库强一致的能力。
 
 ### 2.1 通过spring-cache使用
-* 通过spring-cache的缓存注解使用
+使用本Cache和自己使用spring-cache并无区别，按照常规的使用spring-cache来操作缓存即可，本Cache提供的各种能力对使用方来说是透明化的支持。
+#### 通过spring-cache的缓存注解使用（推荐）
 ```java
+// 数据库操作Dao
+@org.springframework.stereotype.Repository
+public class UserDao {
+    // 查询用户（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存）
+    @org.springframework.cache.annotation.Cacheable(cacheNames = "user", key = "#id")
+    public User find(long id) {
+        // TODO 从数据库查询用户数据
+    }
+
+    // 新增用户（向数据库插入数据，并设置缓存）
+    @org.springframework.cache.annotation.CachePut(cacheNames = "user", key = "#user.id")
+    // @CacheEvict(cacheNames = "user", key = "#user.id")    // 也可以删除缓存
+    public User insert(User user) {
+        // TODO 向数据库插入用户数据
+    }
+
+    // 更新用户（向数据库修改数据，并设置缓存）
+    @org.springframework.cache.annotation.CachePut(cacheNames = "user", key = "#user.id")
+    // @CacheEvict(cacheNames = "user", key = "#user.id")    // 也可以删除缓存
+    public User update(User user) {
+        // TODO 向数据库更新用户数据
+    }
+
+    // 删除用户（向数据库删除数据，并删除缓存）
+    @org.springframework.cache.annotation.CacheEvict(cacheNames = "user", key = "#id")
+    public void delete(long id) {
+        // TODO 从数据库删除用户数据
+    }
+}
+
+// 业务操作Service
 @org.springframework.stereotype.Service
 public class UserService {
- // 获取缓存
- @org.springframework.cache.annotation.Cacheable(cacheNames = "users", key = "#id")
- public User findById(long id) {
-     // TODO 从数据库查询数据
- }
- // 设置缓存
- @org.springframework.cache.annotation.CachePut(cacheNames = "users", key = "#user.id")
- @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
- public User update(User user) {
-     // TODO 更新数据库里的数据
- }
- // 删除缓存
- @org.springframework.cache.annotation.CacheEvict(cacheNames = "users", key = "#user.id")
- @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
- public void delete(User user) {
-     // TODO 删除数据库里的数据
- }
+    @Autowired
+    private UserDao userDao;
+
+    // 查询用户
+    public User find(long id) {
+        return userDao.find(id);
+    }
+
+    // 新增用户
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void insert(User user) {
+        userDao.insert(user);
+    }
+
+    // 更新用户
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void update(User user) {
+        userDao.update(user);
+    }
+
+    // 删除用户
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void delete(long id) {
+        userDao.delete(id);
+    }
 }
 ```
 > 注意：
 > 1. 本Cache不支持clear操作，所以@CacheEvict的allEntries属性不能设置为true
 > 2. @Cacheable的sync属性已默认强制设置为true，所以cacheNames参数只能配置一个cacheName，配置多个会报类似这样错误：java.lang.IllegalStateException: @Cacheable(sync=true) only allows a single cache on 'Builder[public abstract demo.dal.App demo.dal.AppDao.findByAppId(java.lang.String)] caches=[app, app2] | key='#p0' | keyGenerator='' | cacheManager='' | cacheResolver='' | condition='' | unless='' | sync='true''
 
-* 通过spring-cache的缓存接口使用
+#### 通过spring-cache的缓存接口使用
 ```java
-@org.springframework.stereotype.Service
+// 业务操作Service
+@Service
 public class UserService {
     // 获取spring-cache的缓存接口
     @Autowired
     private org.springframework.cache.CacheManager cacheManager;
 
-    // 获取缓存
-    public User findById(long id) {
+    // 查询用户（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存）
+    public User find(long id) {
         Cache cache = cacheManager.getCache("user");
-        return cache.get(id, () -> {
-            // TODO 从数据库查询数据
+        return cache.get(id, () -> {    // 对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），需要使用本方法来获取数据，才能保证缓存的强一致（原因在注意事项中有说明）
+            // TODO 从数据库查询用户数据
         });
     }
 
-    // 设置缓存
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
-    public User update(User user) {
-        // TODO 更新数据库里的数据
+    // 新增用户（向数据库插入数据，并设置缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void insert(User user) {
+        // TODO 向数据库插入用户数据
+
+        // 设置缓存
         Cache cache = cacheManager.getCache("user");
         cache.put(user.getId(), user);
+        // cache.evict(user.getId());   // 也可以删除缓存
     }
 
-    // 删除缓存
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
-    public void delete(User user) {
-        // TODO 删除数据库里的数据
+    // 更新用户（向数据库修改数据，并设置缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void update(User user) {
+        // TODO 向数据库更新用户数据
+
+        // 设置缓存
         Cache cache = cacheManager.getCache("user");
-        cache.evict(user.getId());
+        cache.put(user.getId(), user);
+        // cache.evict(user.getId());   // 也可以删除缓存
+    }
+
+    // 删除用户（向数据库删除数据，并删除缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void delete(long id) {
+        // TODO 从数据库删除用户数据
+
+        // 删除缓存
+        Cache cache = cacheManager.getCache("user");
+        cache.evict(id);
     }
 }
 ```
-> 注意：本Cache不支持clear操作，所以不能调用cache.clear()方法
+> 注意：
+> 1. 本Cache不支持clear操作，所以不能调用Cache.clear()方法
+> 2. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），应该通过Cache.get(java.lang.Object, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object)获取缓存，自己判断缓存不存在再从数据库获取数据，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.util.concurrent.Callable)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
 
 ### 2.1 通过本Cache的接口和CacheTemplate使用
-* 通过CacheManager接口使用
+#### 通过CacheManager接口使用
 ```java
-@org.springframework.stereotype.Service
+// 业务操作Service
+@Service
 public class UserService {
-    // 获取CacheManager接口
+    // 获取spring-cache的缓存接口
     @Autowired
     private org.antframework.cache.CacheManager cacheManager;
 
-    // 获取缓存
-    public User findById(long id) {
+    // 查询用户（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存）
+    public User find(long id) {
         Cache cache = cacheManager.getCache("user");
-        return cache.get(id, User.class, () -> {
-            // TODO 从数据库查询数据
+        return cache.get(id, User.class, () -> {    // 对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），需要使用本方法来获取数据，才能保证缓存的强一致（原因在注意事项中有说明）
+            // TODO 从数据库查询用户数据
         });
     }
 
-    // 设置缓存
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
-    public User update(User user) {
-        // TODO 更新数据库里的数据
+    // 新增用户（向数据库插入数据，并设置缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void insert(User user) {
+        // TODO 向数据库插入用户数据
+
+        // 设置缓存
         Cache cache = cacheManager.getCache("user");
         cache.put(user.getId(), user);
+        // cache.evict(user.getId());   // 也可以删除缓存
     }
 
-    // 删除缓存
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行，二是为了保证缓存强一致
-    public void delete(User user) {
-        // TODO 删除数据库里的数据
+    // 更新用户（向数据库修改数据，并设置缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void update(User user) {
+        // TODO 向数据库更新用户数据
+
+        // 设置缓存
         Cache cache = cacheManager.getCache("user");
-        cache.remove(user.getId());
+        cache.put(user.getId(), user);
+        // cache.evict(user.getId());   // 也可以删除缓存
+    }
+
+    // 删除用户（向数据库删除数据，并删除缓存）
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    public void delete(long id) {
+        // TODO 从数据库删除用户数据
+
+        // 删除缓存
+        Cache cache = cacheManager.getCache("user");
+        cache.remove(id);
     }
 }
 ```
-> 注意：本Cache的接口和spring-cache接口的名称、方法、作用都很相似
+本Cache的接口和spring-cache接口的名称、方法、作用都很相似
+> 注意：
+> 1. 本Cache不支持clear操作，所以Cache没有clear方法
+> 2. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从数据库获取数据，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
 
-* 通过CacheTemplate使用
+#### 通过CacheTemplate使用
+对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致。
 ```java
-@org.springframework.stereotype.Service
+// 业务操作Service
+@Service
 public class UserService {
+    // 获取spring-cache的缓存接口
+    @Autowired
+    private org.antframework.cache.CacheManager cacheManager;
     // 获取CacheTemplate
     @Autowired
     private CacheTemplate cacheTemplate;
 
-    public void doBiz(long id) {
-        // 一致性执行（保证缓存与底层数据的一致性）
+    // 查询数据（有缓存则从缓存获取，无缓存则从底层数据获取并设置缓存）
+    public MyData getData(long dataId) {
+        Cache cache = cacheManager.getCache("mydata");
+        return cache.get(dataId, MyData.class, () -> {    // 对于读场景（有缓存则从缓存获取，无缓存则从底层数据获取并设置缓存），需要使用本方法来获取数据，才能保证缓存的强一致（原因在注意事项中有说明）
+            // TODO 从数据库查询用户数据
+        });
+    }
+
+    // 修改底层数据和缓存
+    public void updateData(long dataId, MyData data) {
+        // 一致性执行（保证缓存与底层数据强一致）
         cacheTemplate.consistentDo(cacheManager -> {
-            // 缓存回调（缓存相关操作在这个回调里操作）
+            // 缓存回调（修改缓存相关操作在这个回调里编写）
 
-            Cache cache= cacheManager.getCache("user");
-            cache.remove(id);
-            // 其他缓存操作。。。
+            Cache cache = cacheManager.getCache("mydata");
+            cache.put(dataId, data);
+            // 其他缓存修改操作。。。
         }, () -> {
-            // 数据回调（数据相关操作在这个回调里操作）
+            // 数据回调（修改底层数据相关操作在这个回调里编写）
 
-            // TODO 删除数据库里的ID为123的用户
-            // 其他数据库操作
+            // TODO 修改底层数据（比如修改文件、修改网络数据等）
+            // 其他底层数据修改操作。。。
         });
     }
 }
 ```
-> 注意：通过CacheTemplate.consistentDo()方法可以不用预先开启事务，数据也可以不是数据库数据，可以是文件数据或网络数据等等，Cache会保证缓存的强一致。
+> 注意：
+> 1. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从底层数据获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从底层数据获取，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
