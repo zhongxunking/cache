@@ -1,19 +1,17 @@
 # Cache
 
-##### 简介
-
-Cache是一款分布式场景下基于Redis的高性能强一致的缓存组件，提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
+1. 简介
+> Cache是一款分布式场景下基于Redis的高性能强一致的缓存组件，提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
 
 > 本组件已经上传到[maven中央库](https://search.maven.org/search?q=org.antframework.cache)
 
-##### 环境要求
-* JDK1.8及以上
+2. 环境要求
+> * JDK1.8及以上
 
-##### 设计
-[整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1)
+3. [整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1)
 
-##### 技术支持
-欢迎加我微信（zhong_xun_）入群交流。<br/>
+4. 技术支持
+> 欢迎加我微信（zhong_xun_）入群交流。<br/>
 <img src="https://note.youdao.com/yws/api/personal/file/WEBbca9e0a9a6e1ea2d9ab9def1cc90f839?method=download&shareKey=00e90849ae0d3b5cb8ed7dd12bc6842e" width=150 />
 
 ## 1. 将Cache引入进你的系统
