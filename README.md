@@ -367,7 +367,7 @@ private CounterManager counterManager;
 
 // 获取所有缓存过去2小时的统计数据（默认最多可以统计过去24小时）
 public Map<String, Counter.Statistic> count() {
-    Map<String, Counter.Statistic> result=new HashMap<>();
+    Map<String, Counter.Statistic> result = new HashMap<>();
 
     long endTime = System.currentTimeMillis();
     long startTime = endTime - 2 * 60 * 60 * 1000;
