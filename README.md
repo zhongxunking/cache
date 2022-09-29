@@ -12,7 +12,7 @@
 
 4. 技术支持
 > 欢迎加我微信（zhong_xun_）入群交流。<br/>
-<img src="https://note.youdao.com/yws/api/personal/file/WEBbca9e0a9a6e1ea2d9ab9def1cc90f839?method=download&shareKey=00e90849ae0d3b5cb8ed7dd12bc6842e" width=150 />
+<img src="https://note.youdao.com/yws/api/personal/file/WEB6b849e698db2a635b43eba5bc949ce1c?method=download&shareKey=27623320b5ca82cbf768b61130c81de0" width=150 />
 
 ## 1. 将Cache引入进你的系统
 引入Cache很简单，按照以下操作即可。
