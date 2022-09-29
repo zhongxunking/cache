@@ -356,3 +356,57 @@ public class UserService {
 ```
 > 注意：
 > 1. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从底层数据获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从底层数据获取，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
+
+## 3. Cache统计
+Cache默认提供统计最近24小时统计粒度为1分钟的缓存查询统计，包括：查询耗时、本地缓存命中和未命中次数、远程缓存命中和未命中次数、底层数据加载耗时、缓存功效等。
+使用方可通过org.antframework.cache.statistic.CounterManager获取Cache统计数据。
+
+通过如下方式获取统计结果：
+```java
+@Autowired
+private CounterManager counterManager;
+
+// 获取所有缓存过去2小时的统计数据（默认最多可以统计过去24小时）
+public Map<String, Counter.Statistic> count() {
+    Map<String, Counter.Statistic> result=new HashMap<>();
+
+    long endTime = System.currentTimeMillis();
+    long startTime = endTime - 2 * 60 * 60 * 1000;
+
+    for (String name : counterManager.getNames()) {
+        Counter counter = counterManager.get(name);
+        Counter.Statistic statistic = counter.count(startTime, endTime);
+        result.put(name, statistic);
+    }
+
+    return result;
+}
+```
+统计结果示例如下：
+```json
+{
+  "app": {                              // app为被统计缓存的cacheName
+    "load": {                           // 加载底层数据的统计
+      "hits": 1,                        // 命中次数
+      "averageHitTimeCost": 62,         // 平均的命中耗时（单位：毫秒；-1表示无法计算）
+      "misses": 0,                      // 未命中次数
+      "averageMissTimeCost": -1         // 平均的未命中耗时（单位：毫秒；-1表示无法计算）
+    },
+    "orderedNameStorages": {            // 缓存统计
+      "0-Local-Caffeine": {             // 本地缓存统计
+        "hits": 39,                     // 命中次数
+        "averageHitTimeCost": 0,        // 平均的命中耗时（单位：毫秒；-1表示无法计算）
+        "misses": 2,                    // 未命中次数
+        "averageMissTimeCost": 0        // 平均的未命中耗时（单位：毫秒；-1表示无法计算）
+      },
+      "1-Remote-Redis": {               // 远程缓存统计
+        "hits": 1,                      // 命中次数
+        "averageHitTimeCost": 6,        // 平均的命中耗时（单位：毫秒；-1表示无法计算）
+        "misses": 1,                    // 未命中次数
+        "averageMissTimeCost": 21       // 平均的未命中耗时（单位：毫秒；-1表示无法计算）
+      }
+    },
+    "efficacy": 0.035011801730920535    // 缓存功效（实际读数据耗时/无缓存时读数据耗时；-1表示无法计算；值越小功效越强，比如：0.1表示因为缓存的存在读数据耗时缩短到原来的10%）
+  }
+}
+```
