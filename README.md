@@ -42,8 +42,8 @@ spring.redis.port=6379
 # 必填：命名空间（也可以通过ant.cache.namespace配置）
 spring.application.name=customer    #这里使用customer（会员系统）作为举例
 
-# Cache提供了灵活多样的配置，包括：开关相关配置、缓存有效期相关配置、本地缓存相关配置、统计相关配置等
 # 以下配置均是选填配置，使用方一般使用默认配置即可，无需自定义配置
+# Cache提供了灵活多样的配置，包括：开关相关配置、缓存有效期相关配置、本地缓存相关配置、统计相关配置等
 # 默认配置提供：缓存键值对在Redis的有效期为1小时，本地缓存键值对最大容量为10000，允许缓存null（更多细节配置可通过下面的配置查看和定制）
 
 # 开关相关配置
@@ -137,7 +137,8 @@ Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spr
 
 ### 2.1 通过spring-cache使用
 使用本Cache和自己使用spring-cache并无区别，按照常规的使用spring-cache来操作缓存即可，本Cache提供的各种能力对使用方来说是透明化的支持。
-#### 通过spring-cache的缓存注解使用（推荐）
+
+#### 2.1.1 通过spring-cache的缓存注解使用（推荐）
 ```java
 // 数据库操作Dao
 @org.springframework.stereotype.Repository
@@ -203,7 +204,7 @@ public class UserService {
 > 1. 本Cache不支持clear操作，所以@CacheEvict的allEntries属性不能设置为true
 > 2. @Cacheable的sync属性已默认强制设置为true，所以cacheNames参数只能配置一个cacheName，配置多个会报类似这样错误：java.lang.IllegalStateException: @Cacheable(sync=true) only allows a single cache on 'Builder[public abstract demo.dal.App demo.dal.AppDao.findByAppId(java.lang.String)] caches=[app, app2] | key='#p0' | keyGenerator='' | cacheManager='' | cacheResolver='' | condition='' | unless='' | sync='true''
 
-#### 通过spring-cache的缓存接口使用
+#### 2.1.2 通过spring-cache的缓存接口使用
 ```java
 // 业务操作Service
 @Service
@@ -257,8 +258,9 @@ public class UserService {
 > 1. 本Cache不支持clear操作，所以不能调用Cache.clear()方法
 > 2. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），应该通过Cache.get(java.lang.Object, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object)获取缓存，自己判断缓存不存在再从数据库获取数据，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.util.concurrent.Callable)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
 
-### 2.1 通过本Cache的接口和CacheTemplate使用
-#### 通过CacheManager接口使用
+### 2.2 通过本Cache的接口和CacheTemplate使用
+
+#### 2.2.1 通过本Cache的接口使用
 ```java
 // 业务操作Service
 @Service
@@ -313,7 +315,7 @@ public class UserService {
 > 1. 本Cache不支持clear操作，所以Cache没有clear方法
 > 2. 为了保证缓存的强一致性，对于读场景（有缓存则从缓存获取，无缓存则从数据库获取并设置缓存），应该通过Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)来获取数据，就像上面的查询用户方法一样。不能通过先调用Cache.get(java.lang.Object, java.lang.Class<T>)获取缓存，自己判断缓存不存在再从数据库获取数据，最后调用Cache.put(java.lang.Object, java.lang.Object)方法设置缓存。否则的话可能会导致缓存不一致。因为Cache.get(java.lang.Object, java.lang.Class<T>, java.util.concurrent.Callable<T>)是原子性操作，而后面这种方式分散成了几个步骤后是非原子性操作。
 
-#### 通过CacheTemplate使用
+#### 2.2.2 通过CacheTemplate使用
 对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致。
 ```java
 // 业务操作Service
