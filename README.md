@@ -1,7 +1,7 @@
 # Cache
 
 1. 简介
-> Cache是一款分布式场景下基于Redis的高性能强一致的缓存组件，透明化的提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
+> Cache是一款分布式场景下基于Redis的高性能强一致缓存组件，透明化的提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
 
 > 本组件已经上传到[maven中央库](https://search.maven.org/search?q=org.antframework.cache)
 
