@@ -9,7 +9,7 @@
 
     <groupId>org.antframework.cache</groupId>
     <artifactId>cache</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>cache</name>
     <description>分布式场景下高性能强一致缓存组件</description>
