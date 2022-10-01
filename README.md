@@ -1,21 +1,21 @@
 # Cache
 
 1. 简介
-> Cache是一款分布式场景下基于Redis的高性能强一致缓存组件，透明化的提供缓存高性能强一致能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力、缓存热key防御能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
+> Cache是一款分布式场景下基于Redis的高性能强一致缓存组件，透明化的提供缓存高性能强一致能力、缓存防脏读能力、本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力、缓存热key防御能力。 使用简单，兼容spring-cache，可与spring-boot无缝集成。
 
-> 本组件已经上传到[maven中央库](https://search.maven.org/search?q=org.antframework.cache)
+> 本组件已经上传到[Maven中央库](https://search.maven.org/search?q=g:org.antframework.cache%20AND%20a:cache)
 
 2. 环境要求
 > * JDK1.8及以上
 
-3. [整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1)
+3. [整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98)
 
 4. 技术支持
 > 欢迎加我微信（zhong_xun_）入群交流。<br/>
 <img src="https://note.youdao.com/yws/api/personal/file/WEB6b849e698db2a635b43eba5bc949ce1c?method=download&shareKey=27623320b5ca82cbf768b61130c81de0" width=150 />
 
 ## 1. 将Cache引入进你的系统
-引入Cache很简单，按照以下操作即可。
+通过引入Maven依赖和进行少量配置即可将Cache引入进你的系统。
 
 ### 1.1 引入Maven依赖
 Cache支持SpringBoot v2.x，也支持SpringBoot v1.x
@@ -129,7 +129,7 @@ ant.cache.bean-processor.decorate-transaction-manager-order=2147483547
 Cache提供的各种能力对使用方来说几乎是透明的，使用方无需感知到Cache的存在，按照常规的使用spring-cache来操作缓存即可。
 具体如下：
 * 本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力、缓存热key防御能力：对使用方来说是透明化的支持，使用方无需感知到Cache的存在。
-* 缓存高性能强一致能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。注意：在修改数据库中数据和缓存时，需先通过spring-transaction开启事务（通过@Transactional注解或PlatformTransactionManager开启事务），才能保证缓存强一致（即使没有本Cache，在修改数据库中数据时你也需要开启事务）。2、对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致。
+* 缓存高性能强一致能力、缓存防脏读能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。注意：在修改数据库中数据和缓存时，需先通过spring-transaction开启事务（通过@Transactional注解或PlatformTransactionManager开启事务），才能保证缓存强一致（即使没有本Cache，在修改数据库中数据时你也需要开启事务）。2、对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致。
 
 Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spring-cache的注解和接口来透明的使用本Cache。 当然你也可以使用本Cache的接口和CacheTemplate来使用缓存。
 
@@ -411,8 +411,10 @@ public Map<String, Counter.Statistic> count() {
 ```
 
 ## 4. 扩展性
-Cache本身提供极其灵活的扩展
-* 如果想自己实现序列化器，可自己实现org.antframework.cache.serialize.SerializerManager接口（默认使用Hessian作为序列化器）
-* 如果想自己实现数据存储，可自己实现org.antframework.cache.storage.StorageManager接口（默认使用Caffeine作为本地缓存，Redis作为远程缓存）
-* 如果想自己实现缓存统计器，可自己实现org.antframework.cache.statistic.CounterManager接口（默认使用本地内存暂存缓存统计信息）
-* 如果想自己实现加锁器，可自己实现org.antframework.cache.lock.LockerManager接口（默认采用基于Redis的分布式读写锁加锁器）
+Cache本身提供极其灵活的扩展：
+* 如果想自己实现缓存序列化，可实现org.antframework.cache.serialize.SerializerManager接口并放入Spring容器（默认使用Hessian作为序列化器）
+* 如果想自己实现缓存数据存储，可实现org.antframework.cache.storage.StorageManager接口并放入Spring容器（默认使用Caffeine作为本地缓存，Redis作为远程缓存）(采用缓存一致性方案4才此扩展，缓存一致性方案5无此扩展)
+* 如果想自己实现缓存统计，可实现org.antframework.cache.statistic.CounterManager接口并放入Spring容器（默认使用本地内存暂存缓存统计信息）
+* 如果想自己实现缓存加锁，可实现org.antframework.cache.lock.LockerManager接口并放入Spring容器（默认采用基于Redis的分布式读写锁加锁器）(采用缓存一致性方案4才此扩展，缓存一致性方案5无此扩展)
+
+更多扩展能力可自行查看org.antframework.cache.boot.CacheAutoConfiguration、org.antframework.cache.boot.configuration.CacheManagerConfiguration、org.antframework.cache.boot.configuration.ConsistencyV5CacheManagerConfiguration
