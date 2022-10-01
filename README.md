@@ -413,8 +413,8 @@ public Map<String, Counter.Statistic> count() {
 ## 4. 扩展性
 Cache本身提供极其灵活的扩展：
 * 如果想自己实现缓存序列化，可实现org.antframework.cache.serialize.SerializerManager接口并放入Spring容器（默认使用Hessian作为序列化器）
-* 如果想自己实现缓存数据存储，可实现org.antframework.cache.storage.StorageManager接口并放入Spring容器（默认使用Caffeine作为本地缓存，Redis作为远程缓存）(采用缓存一致性方案4才此扩展，缓存一致性方案5无此扩展)
+* 如果想自己实现缓存数据存储，可实现org.antframework.cache.storage.StorageManager接口并放入Spring容器（默认使用Caffeine作为本地缓存，Redis作为远程缓存）(采用缓存一致性方案4才有此扩展，缓存一致性方案5无此扩展)
 * 如果想自己实现缓存统计，可实现org.antframework.cache.statistic.CounterManager接口并放入Spring容器（默认使用本地内存暂存缓存统计信息）
-* 如果想自己实现缓存加锁，可实现org.antframework.cache.lock.LockerManager接口并放入Spring容器（默认采用基于Redis的分布式读写锁加锁器）(采用缓存一致性方案4才此扩展，缓存一致性方案5无此扩展)
+* 如果想自己实现缓存加锁，可实现org.antframework.cache.lock.LockerManager接口并放入Spring容器（默认采用基于Redis的分布式读写锁加锁器）(采用缓存一致性方案4才有此扩展，缓存一致性方案5无此扩展)
 
 更多扩展能力可自行查看org.antframework.cache.boot.CacheAutoConfiguration、org.antframework.cache.boot.configuration.CacheManagerConfiguration、org.antframework.cache.boot.configuration.ConsistencyV5CacheManagerConfiguration
