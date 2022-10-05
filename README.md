@@ -8,7 +8,7 @@
 2. 环境要求
 > * JDK1.8及以上
 
-3. [整体设计](https://github.com/zhongxunking/cache/wiki/%E9%AB%98%E6%80%A7%E8%83%BD%E5%BC%BA%E4%B8%80%E8%87%B4%E7%BC%93%E5%AD%98)
+3. [整体设计](https://mp.weixin.qq.com/s/RC_uxBE6TjEUjR6QGbN0IA)
 
 4. 技术支持
 > 欢迎加我微信（zhong_xun_）入群交流。<br/>
