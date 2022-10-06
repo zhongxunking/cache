@@ -136,7 +136,7 @@ ant.cache.bean-processor.decorate-transaction-manager-order=2147483547
 Cache提供的各种能力对使用方来说几乎是透明的，使用方无需感知到Cache的存在，按照常规的使用spring-cache来操作缓存即可。
 具体如下：
 * 本地缓存能力、缓存防击穿能力、缓存防穿透能力、缓存防雪崩能力、缓存热key防御能力：对使用方来说是透明化的支持，使用方无需感知到Cache的存在。
-* 缓存高性能强一致能力、缓存防脏读能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。注意：在修改数据库中数据和缓存时，需先通过spring-transaction开启事务（通过@Transactional注解或PlatformTransactionManager开启事务），才能保证缓存强一致（即使没有本Cache，为了程序正确性在修改数据库中数据时你也需要开启事务）。2、对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致和缓存防脏读。
+* 缓存高性能强一致能力、缓存防脏读能力：1、对于被缓存的对象是数据库中的数据，且数据库事务是通过spring-transaction来管理的场景（即95%以上的场景），对使用方来说是透明化的支持，使用方无需感知到Cache的存在。注意：在修改数据库中数据和缓存时，需先通过spring-transaction开启事务（通过@Transactional注解或PlatformTransactionManager开启事务），才能保证缓存强一致（即使没有本Cache，为了程序正确性，在修改数据库中数据时你也需要开启事务）。2、对于被缓存的对象不是数据库中的数据（文件或网络中的数据），或事务不是通过spring-transaction来管理的场景，则修改数据和缓存时需使用CacheTemplate才能保证缓存强一致和缓存防脏读。
 
 Cache支持和兼容spring-cache的绝大部分能力，你可以直接使用spring-cache的注解和接口来透明的使用本Cache。 当然你也可以使用本Cache的接口和CacheTemplate来使用缓存。
 
@@ -189,19 +189,19 @@ public class UserService {
     }
 
     // 新增用户
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void insert(User user) {
         userDao.insert(user);
     }
 
     // 更新用户
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void update(User user) {
         userDao.update(user);
     }
 
     // 删除用户
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void delete(long id) {
         userDao.delete(id);
     }
@@ -229,7 +229,7 @@ public class UserService {
     }
 
     // 新增用户（向数据库插入数据，并设置缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void insert(User user) {
         // TODO 向数据库插入用户数据
 
@@ -240,7 +240,7 @@ public class UserService {
     }
 
     // 更新用户（向数据库修改数据，并设置缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void update(User user) {
         // TODO 向数据库更新用户数据
 
@@ -251,7 +251,7 @@ public class UserService {
     }
 
     // 删除用户（向数据库删除数据，并删除缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void delete(long id) {
         // TODO 从数据库删除用户数据
 
@@ -286,7 +286,7 @@ public class UserService {
     }
 
     // 新增用户（向数据库插入数据，并设置缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void insert(User user) {
         // TODO 向数据库插入用户数据
 
@@ -297,7 +297,7 @@ public class UserService {
     }
 
     // 更新用户（向数据库修改数据，并设置缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void update(User user) {
         // TODO 向数据库更新用户数据
 
@@ -308,7 +308,7 @@ public class UserService {
     }
 
     // 删除用户（向数据库删除数据，并删除缓存）
-    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确运行（有数据修改），二是为了保证缓存强一致
+    @org.springframework.transaction.annotation.Transactional  // 开启事务一是为了程序正确性（有数据修改），二是为了保证缓存强一致
     public void delete(long id) {
         // TODO 从数据库删除用户数据
 
