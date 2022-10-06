@@ -35,6 +35,9 @@ Cache支持SpringBoot v2.x，也支持SpringBoot v1.x
 ### 1.2 配置
 在application.properties或application.yaml中配置Redis和Cache
 ```properties
+# 必填：命名空间（也可以通过ant.cache.namespace配置）
+spring.application.name=customer    #这里使用customer（会员系统）作为举例
+
 # 必填：配置Redis（Cache采用的是spring-boot原生的Redis，所以原生的所有Redis配置都有效，以下以最简洁的配置举例）
 # Redis单例模式
 spring.redis.host=192.168.0.1
@@ -44,9 +47,6 @@ spring.redis.port=6379
 # Redis哨兵模式
 #spring.redis.sentinel.master=mymaster
 #spring.redis.sentinel.nodes=192.168.0.1:26379,192.168.0.2:26379,192.168.0.3:26379
-
-# 必填：命名空间（也可以通过ant.cache.namespace配置）
-spring.application.name=customer    #这里使用customer（会员系统）作为举例
 
 
 # 以下配置均是选填配置，使用方一般使用默认配置即可，无需自定义配置
