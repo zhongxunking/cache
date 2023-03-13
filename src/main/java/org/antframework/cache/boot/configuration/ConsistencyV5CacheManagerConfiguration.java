@@ -106,13 +106,13 @@ public class ConsistencyV5CacheManagerConfiguration {
                                                     CacheProperties properties) {
         ConsistencyV5RedisServer server = new ConsistencyV5RedisServer(
                 redisExecutor,
-                properties.getConsistencyV5().getLocker().getLiveTime(),
+                properties.getConsistencyStrategyV5().getLocker().getLiveTime(),
                 readScopeAware,
                 writeScopeAware);
         SyncContext syncContext = new SyncContext(
                 new org.antframework.sync.common.DefaultKeyConverter(),
                 server,
-                properties.getConsistencyV5().getLocker().getMaxWaitTime());
+                properties.getConsistencyStrategyV5().getLocker().getMaxWaitTime());
 
         return new ConsistencyV5LockerManager(keyGenerator, syncContext);
     }

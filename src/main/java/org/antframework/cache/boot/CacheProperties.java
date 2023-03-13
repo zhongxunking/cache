@@ -34,6 +34,10 @@ public class CacheProperties {
      */
     public static final String ENABLE_KEY = "ant.cache.enable";
     /**
+     * 缓存一致性策略的key
+     */
+    public static final String CONSISTENCY_STRATEGY_KEY = "ant.cache.consistency-strategy";
+    /**
      * key转换器的bean名称
      */
     public static final String KEY_CONVERTER_BEAN_NAME = "org.antframework.cache.keyConverter";
@@ -97,11 +101,16 @@ public class CacheProperties {
     @Valid
     private Statistic statistic = new Statistic();
     /**
-     * 选填：缓存一致性方案5相关配置
+     * 选填：缓存一致性策略（默认：V5）
+     */
+    @NotNull
+    private ConsistencyStrategy consistencyStrategy = ConsistencyStrategy.V5;
+    /**
+     * 选填：缓存一致性策略方案5相关配置
      */
     @NotNull
     @Valid
-    private ConsistencyV5 consistencyV5 = new ConsistencyV5();
+    private ConsistencyStrategyV5 consistencyStrategyV5 = new ConsistencyStrategyV5();
     /**
      * 选填：BeanPostProcessor相关配置
      */
@@ -288,20 +297,33 @@ public class CacheProperties {
     }
 
     /**
-     * 缓存一致性方案5相关配置
+     * 缓存一致性策略
+     */
+    public enum ConsistencyStrategy {
+        /**
+         * 方案1（不强一致）
+         */
+        V1,
+        /**
+         * 方案4（较高性能强一致）
+         */
+        V4,
+        /**
+         * 方案5（高性能强一致）
+         */
+        V5,
+        /**
+         * 其他方案
+         */
+        OTHER
+    }
+
+    /**
+     * 缓存一致性策略方案5相关配置
      */
     @Getter
     @Setter
-    public static class ConsistencyV5 {
-        /**
-         * 是否启用缓存一致性方案5的key
-         */
-        public static final String ENABLE_KEY = "ant.cache.consistency-v5.enable";
-
-        /**
-         * 选填：是否启用缓存一致性方案5（true为启用，false为不启用；默认启用）
-         */
-        private boolean enable = true;
+    public static class ConsistencyStrategyV5 {
         /**
          * 选填：加锁器相关配置
          */
