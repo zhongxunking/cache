@@ -14,8 +14,8 @@ import org.antframework.cache.boot.annotation.AwareValueTypeProcessor;
 import org.antframework.cache.boot.annotation.ForceSyncProcessor;
 import org.antframework.cache.boot.cache.CacheManagerAdapter;
 import org.antframework.cache.boot.cache.ValueTypeAware;
-import org.antframework.cache.boot.configuration.CacheManagerConfiguration;
 import org.antframework.cache.boot.configuration.ConsistencyV1CacheManagerConfiguration;
+import org.antframework.cache.boot.configuration.ConsistencyV4CacheManagerConfiguration;
 import org.antframework.cache.boot.configuration.ConsistencyV5CacheManagerConfiguration;
 import org.antframework.cache.boot.transaction.CacheableTransactionManagerProcessor;
 import org.antframework.cache.core.TransactionalCacheManager;
@@ -75,7 +75,7 @@ public class CacheAutoConfiguration {
         return new CacheTemplate(cacheManager);
     }
 
-    // 导入存一致性方案1的缓存管理器配置
+    // 导入缓存一致性方案1的缓存管理器配置
     @Configuration
     @ConditionalOnMissingBean(TransactionalCacheManager.class)
     @ConditionalOnProperty(name = CacheProperties.CONSISTENCY_STRATEGY_KEY, havingValue = "v1")
@@ -83,11 +83,11 @@ public class CacheAutoConfiguration {
     public static class ConsistencyV1CacheManagerConfigurationImporter {
     }
 
-    // 导入缓存管理器配置
+    // 导入缓存一致性方案4的缓存管理器配置
     @Configuration
     @ConditionalOnMissingBean(TransactionalCacheManager.class)
     @ConditionalOnProperty(name = CacheProperties.CONSISTENCY_STRATEGY_KEY, havingValue = "v4")
-    @Import(CacheManagerConfiguration.class)
+    @Import(ConsistencyV4CacheManagerConfiguration.class)
     public static class CacheManagerConfigurationImporter {
     }
 

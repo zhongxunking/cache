@@ -52,7 +52,7 @@ import java.util.function.Function;
  */
 @Configuration
 @Slf4j
-public class CacheManagerConfiguration {
+public class ConsistencyV4CacheManagerConfiguration {
     // 缓存管理器
     @Bean(name = "org.antframework.cache.core.TransactionalCacheManager")
     public OnoffTransactionalCacheManager cacheManager(@Qualifier(CacheProperties.KEY_CONVERTER_BEAN_NAME) Function<Object, String> keyConverter,
