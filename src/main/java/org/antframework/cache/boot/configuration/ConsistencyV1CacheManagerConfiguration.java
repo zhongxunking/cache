@@ -90,7 +90,7 @@ public class ConsistencyV1CacheManagerConfiguration {
         return new HessianSerializerManager();
     }
 
-    // Sync加锁器管理器
+    // 空加锁器管理器
     @Bean(name = "org.antframework.cache.lock.LockerManager")
     @ConditionalOnMissingBean(LockerManager.class)
     public EmptyLockerManager lockerManager() {
