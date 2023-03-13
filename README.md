@@ -23,7 +23,7 @@ Cache支持SpringBoot v2.x，也支持SpringBoot v1.x
 <dependency>
     <groupId>org.antframework.cache</groupId>
     <artifactId>cache</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -115,13 +115,14 @@ ant.cache.statistic.time-length=86400000
 # 选填：统计的时间粒度（单位：毫秒；默认为1分钟）
 ant.cache.statistic.time-granularity=60000
 
-# 缓存一致性方案5相关配置
-# 选填：是否启用缓存一致性方案5（true为启用，false为不启用；默认启用）
-ant.cache.consistency-v5.enable=true
+# 选填：缓存一致性策略（默认：v5）（v1:方案1（不强一致）、v4:方案4（较高性能强一致）、v5:方案5（高性能强一致）、other:其他方案）
+ant.cache.consistency-strategy=v5
+
+# 缓存一致性策略方案v5相关配置
 # 选填：加锁器等待同步消息的最长时间（毫秒，默认为10秒）
-ant.cache.consistency-v5.locker.max-wait-time=10000
+ant.cache.consistency-strategy-v5.locker.max-wait-time=10000
 # 选填：发生异常时Redis中加锁器数据的存活时长（毫秒，默认为10分钟）
-ant.cache.consistency-v5.locker.live-time=600000
+ant.cache.consistency-strategy-v5.locker.live-time=600000
 
 # 缓存BeanPostProcessor相关配置
 # 选填：装饰CacheInterceptor处理器的优先级（默认为Ordered.LOWEST_PRECEDENCE - 300）
